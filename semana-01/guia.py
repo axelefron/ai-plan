@@ -380,3 +380,51 @@
 # Aunque esté roto o incompleto: el commit es mi botón de deshacer real.
 # Un commit es una FOTO congelada, no una vista en vivo.
 # El link de un commit viejo muestra siempre esa foto vieja.
+
+# ==========================================================
+# 8 · CERRAR EL DÍA CON GIT
+# ==========================================================
+
+# Los 3 comandos, siempre en ~/ai-plan (verificar con pwd):
+#
+#   git add .
+#   git commit -m "dia 4"
+#   git push
+#
+# Qué hace cada uno:
+#
+# git add .        --> el "." significa "todo lo de esta carpeta hacia abajo".
+#                      NO guarda nada. Pone los archivos en el staging area,
+#                      que es la mesa donde armo el próximo commit.
+#
+# git commit -m    --> congela la foto y le pone nombre. El -m es el mensaje.
+#                      Cada commit es un estado completo al que puedo volver.
+#                      Devuelve un hash (ej: 64a6069) = nombre único de esa foto.
+#                      El primero dice "root-commit"; los demás, "1 parent".
+#
+# git push         --> sube los commits a GitHub. Es el único que usa internet.
+#                      Sin push, los commits existen solo en mi Mac.
+#
+# Por qué "git push" solo, sin "-u origin main":
+#   el -u del primer push dejó fijada la relación main <-> origin/main.
+#   Desde ahí, "git push" ya sabe a dónde va.
+
+# git status --> ANTES de add. Me muestra qué ve Git como nuevo o cambiado.
+#                Es el único momento barato para darme cuenta de que estoy
+#                por subir algo que no quiero.
+
+# --- El .gitignore ---
+# Archivo en la RAÍZ de ai-plan (mismo nivel que semana-01), un patrón por línea:
+#
+#   .env
+#   __pycache__/
+#   .DS_Store
+#
+# SIN espacios adelante: Git compara el patrón tal cual, y "  .env" no coincide
+# con el archivo .env. La regla queda muerta y no avisa.
+#
+# Por qué importa: el repo es PÚBLICO y el día 10 la API key va en .env.
+# Un commit no es un archivo que borro: es una foto que queda en el historial.
+# Si subo una key, la doy por perdida — la anulo y saco otra.
+
+# Regla del plan: el día cierra con un commit, aunque el código esté roto.
