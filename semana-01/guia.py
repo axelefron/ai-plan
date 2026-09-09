@@ -468,17 +468,3 @@
 #    Borrar todo y volver a 2 líneas. Correr. Verificar.
 #    Agregar UNA línea. Correr. Verificar.
 #    Adivinar nombres de métodos (.pop, .add) es lo que más tiempo me cuesta.
-
-# --- if __name__ == "__main__": ---
-# Un archivo .py se puede EJECUTAR (python3 archivo.py) o IMPORTAR
-# (otro archivo quiere usar mis funciones).
-# Al importar, Python corre todo lo que está en el nivel de afuera.
-# Si llamo main() suelto, se ejecuta también al importar --> rompe los tests.
-# La guarda hace que main() corra SOLO cuando ejecuto el archivo directo.
-# check50 importa mi archivo para probar las funciones sueltas.
-# Desde meal.py en adelante, TODOS los ejercicios de CS50P la llevan.
-
-# --- .split() otra vez (me costó 4 veces hoy) ---
-# .split(sep) recibe UN separador.
-# El 2do argumento es un NÚMERO (cuántos cortes), no otro separador.
-# Para partir por dos separadores distintos --> dos llamadas, en dos pasos.
