@@ -428,3 +428,43 @@
 # Si subo una key, la doy por perdida — la anulo y saco otra.
 
 # Regla del plan: el día cierra con un commit, aunque el código esté roto.
+
+# --- interpreter.py (PS1) — lo que me costó ---
+
+# 1. UN solo input. Si el usuario escribe "1 + 1" completo,
+#    los tres datos ya están adentro de ese string.
+#    No preguntar tres veces.
+
+# texto.split(" ")  --> devuelve una LISTA: ['1', '+', '1']
+# a, b, c = lista   --> reparte: un nombre por elemento.
+#                       Son DOS operaciones distintas: partir y repartir.
+#                       Si la cantidad de nombres no coincide, falla.
+
+# 2. Los nombres nuevos van a la IZQUIERDA del "=".
+#    El "=" se lee de derecha a izquierda:
+#    "calculá lo de la derecha, guardalo con el nombre de la izquierda".
+#    Lo que va entre comillas es TEXTO, nunca un nombre de variable.
+
+# 3. Python lee de arriba hacia abajo.
+#    Una línea solo puede usar cosas creadas en una línea de MÁS ARRIBA.
+
+# 4. Después del split todo es string. float() convierte UN valor,
+#    no una lista. Y el operador NO se convierte: queda string
+#    porque se compara con "+", "-", "*", "/".
+
+# 5. El operador que escribe el usuario es un DATO, no una instrucción.
+#    Python no lo ejecuta. Yo miro ese dato con un if y decido la cuenta.
+
+# 6. Cada rama GUARDA en result; el print va uno solo al final.
+#    Así el formato .1f se escribe una vez y no cuatro.
+
+# 7. Una línea suelta como "z != 0" calcula y tira el resultado.
+#    Para que una condición haga algo tiene que estar en un if.
+
+# 8. check50 busca el archivo en la carpeta donde estoy parado.
+#    Leer la palabra antes del % ANTES de correrlo.
+
+# MÉTODO CUANDO ME TRABO FEO:
+#    Borrar todo y volver a 2 líneas. Correr. Verificar.
+#    Agregar UNA línea. Correr. Verificar.
+#    Adivinar nombres de métodos (.pop, .add) es lo que más tiempo me cuesta.

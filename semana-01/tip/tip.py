@@ -15,5 +15,3 @@ def percent_to_float(p):
     return percent_number
 
 main()
-
-
