@@ -1,0 +1,63 @@
+# loops are for repeting a task infinitely until stopped
+# while y for loops son los principales
+
+# while es mientras la respuesta a una pregunta sea True, el resultado o accion que le asignemos va a seguir printeando o ejecutandose hasta que se le diga literalmenet que pare
+# mismo formato que una funcion, con: y despues indentaiton
+# si no se indica el stop, es un infinite loop error y continua infinitamente, si pasa eso uso cntrl c (cancel)
+# se usa += numero para indicar por cuanto se incremente un numero y al reves con -= numero para achicar --> queda mas pythonico que poner numero + 1
+
+# while True --> while loop que hace la accion indicado mientras sea cierta, y se le indica que hacer si no
+# break es para salir del infinite loop
+
+# for loop solo sirve para iterar dentro de una lista
+# for i in range --> se usa la funcion range() para no escribir cada valor a chequear en el loop, se indica hasta cual o el ultimo pero teniendo en cuenta que los index de las lists empiezan en 0
+# si quiero buscar hasta el item 10 de una lista seria for i in range(9)
+
+# lists nuevo data type --> sirve para guardar info de manera ordenada, varios valores en la misma variable
+# variable = [num1, num2, valor3, etc]
+# se usa "_" para asignar el nombre de una variable que no se va a volver a usar pero se entiende que es una variable y funciona el loop independientemente del nombre asignado a la variable
+
+# se puede usar print("string\n" * numero, end=""") --> \ (option ?) para que se imprima en una nueva linea  cuantas veces quiera
+# se usa el end="" para que no imprima una nueva linea vacia
+
+""""
+num = 0
+
+while num < 3:
+    print("uop")
+    num += 1
+
+for _ in range(3):
+    print("Wop")
+
+print("uopit\n" * 3, end="")
+
+while True:
+    n = int(input("What is the value of n?: "))
+    if n > 0:
+        break
+"""
+
+"""" --> se puede asi tambien pero es mas largo y mas dificil de leer cuando tenes muchos if statements
+    if n < 0:
+        continue
+    else:
+        break
+"""
+
+def main():
+    number = get_number()
+    boom(number)
+
+def get_number():
+    while True:
+        n = int(input("How many boom's do you want?: "))
+        if n > 0:
+            break
+    return n
+
+def boom(number):
+    for i in range(number):
+        print("boom")
+
+main()
