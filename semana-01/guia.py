@@ -1,470 +1,759 @@
 # ==========================================================
 #  GUÍA PERSONAL — Axel · MacBook Air (macOS, zsh)
-#  Cheat sheet de terminal, Python y mis errores recurrentes.
-#  Se actualiza cada vez que aprendo o rompo algo nuevo.
+#  Reescrita al cerrar la Semana 2 (PS0, PS1 y PS2 completos).
+#
+#  CÓMO ESTÁ ORGANIZADA:
+#    PARTE 1 · ENTORNO     terminal, VS Code, git
+#    PARTE 2 · PYTHON      referencia por concepto
+#    PARTE 3 · PATRONES    las formas que se repiten en todo ejercicio
+#    PARTE 4 · MIS ERRORES lo que rompo yo + qué significa cada error
+#    PARTE 5 · RUTINA      cómo encaro un ejercicio y cómo cierro el día
+#
+#  La PARTE 2 se consulta cuando no me acuerdo cómo se escribe algo.
+#  La PARTE 4 se consulta cuando algo no anda. Son momentos distintos.
 # ==========================================================
 
 
 # ##########################################################
-#  0. MIS ERRORES MÁS FRECUENTES
 # ##########################################################
-#
-# 1. CORRER SIN GUARDAR.
-#    La BOLITA ● en la pestaña = sin guardar. Tiene que ser X.
-#    El archivo en disco queda vacío o viejo.
-#    -> ⌘+S ANTES de correr. Siempre. Aunque esté seguro.
-#
-# 2. ESTAR EN LA CARPETA EQUIVOCADA.
-#    La palabra antes del % es la carpeta actual. LEERLA.
-#
-# 3. VARIAS TERMINALES en carpetas distintas y saltar entre ellas.
-#    -> UNA sola terminal. Si sobran, tacho 🗑.
-#
-# 4. DOS ARCHIVOS CON EL MISMO NOMBRE en lugares distintos.
-#    El breadcrumb arriba del editor dice cuál estoy editando.
-#
-# 5. ESCRIBIR EL INPUT DEL PROGRAMA en la terminal cuando el
-#    programa ya terminó. Si volvió el %, terminó. No espera nada.
-#
-# 6. INVENTAR MÉTODOS (.add() no existe). Buscar, no adivinar.
-#
-# 7. NORMALIZAR UN SOLO LADO de la comparación.
-#
-# 8. PONER EL FORMATO AFUERA de las llaves del f-string.
-
-
+#  PARTE 1 · ENTORNO
 # ##########################################################
-#  1. ENTORNO Y TERMINAL
 # ##########################################################
 
 # ----------------------------------------------------------
-# ¿DÓNDE ESTOY?
+# 1.1 ¿DÓNDE ESTOY?  (la pregunta que más me cuesta)
 # ----------------------------------------------------------
 # El prompt lo dice:
-#   axelefron@MacBook-Air-de-Axel-2 indoor %
-#                                   ^^^^^^  <- carpeta actual
+#   axelefron@MacBook-Air-de-Axel-2 problem_set_2 %
+#                                   ^^^^^^^^^^^^^  carpeta actual
 #
-# pwd            ruta completa donde estoy
-# ls             lista archivos y carpetas de acá
-# cat archivo    muestra el contenido REAL en disco (no el del editor)
+# TODOS los comandos actúan desde donde estoy parado:
+#   python3 archivo.py   busca el archivo ACÁ
+#   check50              busca el archivo ACÁ
+#   git add .            agarra de ACÁ HACIA ABAJO, no todo el repo
+#
+# LEER LA PALABRA ANTES DEL %  antes de correr cualquier cosa.
+#
+# pwd            ruta completa
+# ls             qué hay acá
+# cat archivo    contenido REAL en disco (no el del editor sin guardar)
 
 # ----------------------------------------------------------
-# MOVERME
+# 1.2 MOVERME
 # ----------------------------------------------------------
-# cd carpeta                         entro a una subcarpeta
-# cd ..                              subo un nivel
-# cd ~/ai-plan/semana-01/indoor      voy directo (~ = mi carpeta personal)
-# cd ind + TAB                       autocompleta el nombre
+# cd carpeta                  entro a una subcarpeta
+# cd ..                       subo un nivel
+# cd ~/ai-plan/semana-02      voy directo   (~ = /Users/axelefron)
+# cd car + TAB                autocompleta
+#
+# cd es para CARPETAS, nunca para archivos.
+#   cd ~/.../coke.py   ->  "not a directory"
+# El archivo es el destino de python3, no de cd:
+#   cd ~/ai-plan/semana-02/problem_set_2
+#   python3 coke.py
+#
+# Nombres: sin espacios, sin mayúsculas. Uso guion_bajo.
+# Con espacios hay que poner comillas en cada comando. Molesta siempre.
 
 # ----------------------------------------------------------
-# % vs >>>   (los dos mundos)
+# 1.3 % vs >>>
 # ----------------------------------------------------------
-# %    = terminal (zsh). Comandos del sistema: ls, cd, python3, check50
-# >>>  = estoy DENTRO de Python. Solo entiende Python.
-#        Salir: exit()  o  ⌃+D
+# %    = terminal (zsh). ls, cd, python3, check50, git
+# >>>  = estoy DENTRO de Python. Solo entiende Python. cd no existe acá.
+#        Salir: exit()
 #
-# Si la terminal abre en >>> sin que yo haga nada, es el perfil Python.
+# Si abre en >>> solo, es el perfil "Python" de la terminal.
 # Quiero zsh: Terminal -> New Terminal (NO "With Profile").
 
 # ----------------------------------------------------------
-# EN MAC ES python3 Y pip3
+# 1.4 EL REPL — mi herramienta más subusada
 # ----------------------------------------------------------
-# python3 archivo.py     correr un programa
-# pip3 install paquete   instalar una librería
-# python / pip a secas   -> NO usar (apuntan al viejo del sistema)
-
-# ----------------------------------------------------------
-# CORRER UN ARCHIVO
-# ----------------------------------------------------------
-# python3 indoor.py      SÍ (el intérprete corre, el archivo es el input)
-# indoor.py              NO -> "command not found", no es un ejecutable
+# python3          entro
+# exit()           salgo
 #
-# Botón ▶ Run: usa la ruta completa del archivo abierto.
-# Terminal:    usa la carpeta donde estoy parado.
-# Cuando uno anda y el otro no, es porque no coinciden.
-
-# ----------------------------------------------------------
-# ARCHIVOS Y CARPETAS
-# ----------------------------------------------------------
-# mkdir nombre       nueva carpeta
-# touch archivo.py   nuevo archivo (o ícono "hoja +" en el Explorer)
-# rm archivo.py      borrar (NO va a la papelera: desaparece)
+# Sirve para VERIFICAR EN 30 SEGUNDOS en vez de adivinar:
+#   "1 + 1".split(" ")        ->  ['1', '+', '1']
+#   a, b = "hola chau".split(" ")
+#   "CS50"[0:2]               ->  'CS'
+#   "A".isupper()             ->  True
+#   5 in [5, 10, 25]          ->  True
+#   abs(-10)                  ->  10
+#   dir("")                   ->  TODOS los métodos de string
 #
-# NUNCA espacios en los nombres. Usar guion_bajo o guion-medio.
-# Todo en minúscula: en un servidor Linux, Indoor != indoor.
+# Adivinar nombres de métodos (.isnum, .add, .pop sobre un str) es
+# lo que más tiempo me costó en la semana 2. El REPL lo mata al toque.
 
 # ----------------------------------------------------------
-# ATAJOS — VS CODE
+# 1.5 MAC: python3 Y pip3
 # ----------------------------------------------------------
-# ⌘+S              guardar
-# ⌘+Z / ⌘+⇧+Z      deshacer / rehacer
-# ⌘+/              comentar-descomentar selección  <- para aislar bugs
-# ⌘+⇧+P            paleta de comandos
-# ⌃+`              abrir terminal (o Terminal -> New Terminal)
-# ⌃+ -             volver a donde estaba el cursor antes
-# ⇧+Enter          correr solo la selección
+# python3 archivo.py      correr
+# pip3 install paquete    instalar
+# python / pip a secas    NO (apuntan al viejo del sistema)
 
 # ----------------------------------------------------------
-# ATAJOS — TERMINAL
+# 1.6 ATAJOS
 # ----------------------------------------------------------
-# ↑          comando anterior (no reescribir python3 archivo.py)
-# ⌃+U        borrar la línea que estoy escribiendo
-# ⌃+C        cancelar lo que esté corriendo o colgado
-# TAB        autocompletar nombres
+# VS CODE
+#   ⌘+S              guardar        <- la bolita ● tiene que volverse X
+#   ⌘+Z / ⌘+⇧+Z      deshacer / rehacer
+#   ⌘+/              comentar selección   <- para aislar bugs
+#   ⌃+`              abrir terminal
+#   ⇧+Enter          correr solo la selección
+#
+# TERMINAL
+#   ↑          comando anterior
+#   ⌃+U        borrar la línea actual
+#   ⌃+C        cancelar lo que corre o está colgado (loop infinito)
+#   TAB        autocompletar
+
+# ----------------------------------------------------------
+# 1.7 GIT — cerrar el día
+# ----------------------------------------------------------
+# SIEMPRE desde la raíz del repo:
+#
+#   cd ~/ai-plan
+#   git status                <- LEER antes de add. Dice qué ve Git
+#                                y entre paréntesis qué comando usar.
+#   git add .                 <- "." = esta carpeta HACIA ABAJO
+#   git commit -m "dia N"
+#   git push
+#
+# Señal de terminado: desaparece el * de "main*" abajo a la izquierda,
+# y las M del Explorer.
+#
+# QUÉ ES CADA COSA
+#   git add      pone en el staging area. NO guarda nada todavía.
+#   git commit   congela la foto. Devuelve un hash (ej: 64a6069).
+#   git push     sube. El único que usa internet.
+#   git restore <ruta>   RECUPERA archivos borrados, con la versión
+#                        del último commit. Solo si ya estaban commiteados.
+#
+# Por eso commiteo seguido AUNQUE ESTÉ ROTO: es mi botón de deshacer real.
+# Un commit es una foto congelada, no una vista en vivo.
+#
+# .gitignore (en la raíz, un patrón por línea, SIN espacios adelante):
+#   .env
+#   __pycache__/
+#   .DS_Store
+# El repo es PÚBLICO. Si subo una API key, la doy por perdida.
+#
+# OJO: axelefron/ai-plan (mío, git push) y me50/axelefron (CS50, submit50)
+# son DOS REPOS DISTINTOS. Un push no entrega nada a CS50.
+
+# ----------------------------------------------------------
+# 1.8 INDENTACIÓN = ESTRUCTURA
+# ----------------------------------------------------------
+# En Python la sangría no es estética: ES la lógica.
+#
+# Un else se aparea con el if que tiene LA MISMA sangría.
+# Si lo indento de más, cuelga del if interno y cambia todo el programa
+# sin dar ningún error.
+#
+#   for c in s:
+#       if c.isdigit():
+#           if <otra cosa>:
+#               return False          <- nivel 4
+#           marca = True              <- nivel 3: adentro del isdigit,
+#       else:                            afuera del if interno
+#           ...                       <- este else es del isdigit()
+#
+# Cuando el programa "hace cualquier cosa" pero no tira error:
+# mirar las líneas verticales de VS Code antes que la lógica.
 
 
 # ##########################################################
-#  2. PYTHON — FUNDAMENTOS
+# ##########################################################
+#  PARTE 2 · PYTHON — REFERENCIA
+# ##########################################################
 # ##########################################################
 
 # ----------------------------------------------------------
-# FUNCIÓN vs MÉTODO
+# 2.1 FUNCIÓN vs MÉTODO
 # ----------------------------------------------------------
-# función -> el valor va ADENTRO:   len(texto)
+# función -> el valor va ADENTRO:   len(texto)   abs(-10)   int("5")
 # método  -> va PEGADO con punto:   texto.strip()
 #
-# Los métodos son de un TIPO: los de texto solo andan en texto.
+# Los métodos son DE UN TIPO: los de texto solo andan en texto.
 # NINGUNO modifica el original: todos DEVUELVEN algo nuevo.
-#   texto.strip()          -> calcula y tira el resultado
-#   texto = texto.strip()  -> lo guarda
-
-# ----------------------------------------------------------
-# TIPOS Y CONVERSIÓN
-# ----------------------------------------------------------
-# input() SIEMPRE devuelve str, aunque el usuario escriba un número.
-# "42" (texto) y 42 (número) son cosas distintas. Nunca son iguales.
+#   texto.strip()          calcula y tira el resultado
+#   texto = texto.strip()  lo guarda
 #
-# int(x)      a entero      int("42") -> 42     (int("2.5") explota)
-# float(x)    a decimal     float("2.5") -> 2.5
-# str(x)      a texto       str(42) -> "42"
-#             str() con UN argumento convierte.
-#             str() con DOS hace otra cosa (decodificar bytes). NO concatena.
-# type(x)     qué tipo es. Útil para debuggear.
+# Encadenar: cada método opera sobre el resultado del anterior.
+#   texto.strip().lower().replace(" ", "-")
+# EL ORDEN IMPORTA: strip ANTES que replace, o los espacios de los
+# extremos ya se convirtieron en guiones.
 
 # ----------------------------------------------------------
-# OTRAS BUILT-IN
+# 2.2 TIPOS Y CONVERSIÓN
 # ----------------------------------------------------------
-# print(x)        muestra en pantalla. NO devuelve nada (None).
-# input("msg")    pide texto al usuario.
-# len(x)          cuántos caracteres/elementos tiene
-# round(x, n)     redondea a n decimales (para CALCULAR, no para mostrar)
-
-# ----------------------------------------------------------
-# MÉTODOS DE TEXTO (str)
-# ----------------------------------------------------------
-# LIMPIAR / NORMALIZAR (antes de comparar)
-#   .strip()        saca espacios de los EXTREMOS
-#                   OJO: NO saca los espacios del medio.
-#   .lower()        todo a minúscula
-#   .casefold()     como lower pero más agresivo (otros idiomas)
-#   .upper()        todo a MAYÚSCULA
-#   .title()        Primera Letra De Cada Palabra
-#                   (se rompe con "McDonald" -> "Mcdonald")
-#   .capitalize()   Solo la primera letra de todo el texto
+# input() SIEMPRE devuelve str, aunque escriban un número.
+# "42" y 42 son cosas distintas. Nunca son iguales.
 #
-# PREGUNTAR (devuelven True o False)
-#   .startswith("h")      ¿empieza con eso?
-#   .endswith(".py")      ¿termina con eso?
-#   "x" in texto          ¿está contenido? (operador, no método)
+# int(x)    a entero    int("42") -> 42       (int("2.5") explota)
+# float(x)  a decimal   float("2.5") -> 2.5
+# str(x)    a texto     str(42) -> "42"
+# type(x)   qué tipo es. Para debuggear.
+# abs(x)    valor absoluto. abs(-10) -> 10   (función suelta, no método)
+# len(x)    cuántos caracteres/elementos
+# round(x, n)  redondea para CALCULAR (para mostrar uso f-string)
+#
+# CONVERTIR UNO POR UNO, no la colección entera:
+#   float("7:21")              explota
+#   float(["1","+","1"])       explota (es una lista)
+# Primero parto, después convierto cada pedazo que necesito.
+# Y convierto SOLO lo que es número: el operador o el meridiano
+# quedan como texto porque los voy a comparar.
+
+# ----------------------------------------------------------
+# 2.3 STRINGS — MÉTODOS
+# ----------------------------------------------------------
+# NORMALIZAR (antes de comparar)
+#   .strip()        saca espacios de los EXTREMOS (no los del medio)
+#   .lower()        todo minúscula
+#   .upper()        todo MAYÚSCULA
+#   .casefold()     como lower pero más agresivo
+#   .title()        Primera Letra De Cada Palabra   <- para "Sweet Cherries"
+#   .capitalize()   Solo la primera letra de todo   <- rompe con 2 palabras
+#
+# PREGUNTAR (devuelven True / False — se usan DIRECTO en el if,
+#            no hace falta "== True")
+#   .isalpha()          ¿son todas letras?
+#   .isdigit()          ¿son todos dígitos?
+#   .isalnum()          ¿letras o números, sin símbolos ni espacios?
+#   .isupper()          ¿está todo en mayúscula?
+#   .islower()          ¿está todo en minúscula?
+#   .startswith("h")    ¿empieza con eso?
+#   .endswith(".py")    ¿termina con eso?
 #
 # TRANSFORMAR
 #   .replace(viejo, nuevo)   cambia TODAS las apariciones
 #   .count("a")              cuántas veces aparece
-#   .split(",")              parte el texto en una lista
+#   .split(sep)              parte el texto y devuelve una LISTA
 #   " ".join(lista)          une una lista en un texto
 #
-# ENCADENAR: cada método opera sobre el resultado del anterior.
-#   texto.strip().lower().replace(" ", "-")
-#
-#   EL ORDEN IMPORTA: strip ANTES que replace, o los espacios de los
-#   extremos ya se convirtieron en guiones y no se pueden sacar.
-#
-# Para ver todos los métodos de texto: dir("") en el intérprete.
+# .split() RECIBE UN SOLO SEPARADOR.
+#   El segundo argumento es un NÚMERO (cuántos cortes), no otro separador.
+#   NO existe forma de partir por dos separadores en una llamada.
+#   Para eso: dos pasos.  "7:30 a.m." -> split(" ") -> luego split(":")
 
 # ----------------------------------------------------------
-# F-STRINGS (mostrar)
+# 2.4 STRINGS — POSICIONES Y PEDAZOS
 # ----------------------------------------------------------
-# ANATOMÍA:
+#   s[0]      primer carácter        (empieza en CERO)
+#   s[1]      segundo
+#   s[-1]     último
+#   s[0:2]    desde 0 HASTA 2 SIN INCLUIR el 2  -> los dos primeros
 #
-#   f"Total: {percent_margin:.1f}%"
-#    │       │              │    │
-#    │       │              │    └─ afuera de {} = texto literal
-#    │       │              └────── ADENTRO: dos puntos + formato
-#    │       └───────────────────── adentro: la expresión a mostrar
-#    └───────────────────────────── la f que activa las llaves
+# EL NÚMERO DE LA DERECHA SE EXCLUYE. Siempre.
+#   "CS50"[0:1]  ->  "C"     (una sola letra)
+#   "CS50"[0:2]  ->  "CS"    (dos letras)
+
+# ----------------------------------------------------------
+# 2.5 F-STRINGS (mostrar)
+# ----------------------------------------------------------
+#   f"Total: {percent:.1f}%"
+#    │       │       │    │
+#    │       │       │    └─ afuera de {} = texto literal
+#    │       │       └────── ADENTRO: dos puntos + formato
+#    │       └────────────── adentro: la expresión a mostrar
+#    └────────────────────── la f que activa las llaves
 #
-# REGLA: adentro de {} se calcula. Afuera se imprime tal cual.
-# El formato SIEMPRE va adentro, después de ":".
-#
-# Formatos:  .1f = 1 decimal   .2f = 2 decimales (plata)   :, = miles
+# REGLA: adentro de {} se calcula, afuera se imprime tal cual.
+# El formato SIEMPRE adentro, después de ":".
+#   .1f = 1 decimal    .2f = 2 decimales (plata)    :, = separador de miles
 #
 # El formato va donde el valor TODAVÍA ES NÚMERO.
 # Si ya se convirtió a texto, no hay nada que formatear.
-
-# ----------------------------------------------------------
-# LOS FLOATS MIENTEN
-# ----------------------------------------------------------
-# 0.07 * 100  ->  7.000000000000001
-# 0.6  * 100  ->  60.0        (este sale bien de casualidad)
 #
-# Los decimales se guardan en binario y algunos no tienen
-# representación exacta (como 1/3 en decimal).
-# El error aparece SOLO CON ALGUNOS NÚMEROS
-#   -> probar con un caso no alcanza. Nunca probar solo con 0 o 1.
-#
+# LOS FLOATS MIENTEN:
+#   0.07 * 100  ->  7.000000000000001
+#   0.6  * 100  ->  60.0      (este sale bien de casualidad)
+# El error aparece SOLO CON ALGUNOS NÚMEROS -> probar con un caso no alcanza.
 # REGLA: todo número calculado que se MUESTRA, va formateado.
 
+# ----------------------------------------------------------
+# 2.6 print()
+# ----------------------------------------------------------
+# print(a, b)             separa con un espacio
+# print(a, b, sep="_")    el sep va ENTRE los argumentos
+#                         -> NO sirve para armar texto, eso lo armo con +
+# print("x", end="")      no salta de línea al final
+# print()                 imprime una línea vacía
+#
+# print() NO DEVUELVE NADA (devuelve None).
+#   print(x.lower())   sí
+#   print(x).lower()   no  -> AttributeError: 'NoneType'
 
-# ##########################################################
-#  3. MIS FUNCIONES
-# ##########################################################
-#
+# ----------------------------------------------------------
+# 2.7 FUNCIONES
+# ----------------------------------------------------------
 # def NO EJECUTA NADA. Define. Nada corre hasta que alguien llama.
-# Por eso main() al final del archivo es obligatorio.
 #
-#   def slugify(text):
-#       ^        ^
-#       nombre   parámetro = etiqueta del casillero vacío
+#   def convert(time):
+#       ^       ^
+#       nombre  parámetro = etiqueta del casillero vacío
 #
-# El parámetro recibe su valor EN LA LLAMADA, lo pone quien llama.
-# Adentro trabajo con el PARÁMETRO (text), nunca con el nombre
-# de la función.
+# El parámetro recibe su valor EN LA LLAMADA.
+# Adentro trabajo con el PARÁMETRO, nunca con el nombre de la función
+# ni con variables de otra función.
 #
-# SCOPE: el parámetro solo existe adentro de la función.
-#        Afuera -> NameError. Por eso dos funciones pueden usar
-#        el mismo nombre de parámetro sin pisarse.
+# SI LA FUNCIÓN RECIBE UN DATO, NO LE PIDA INPUT ADENTRO.
+# Un input() adentro pisa lo que le mandaron. (Me pasó en tip, interpreter, meal.)
 #
-# return -> devuelve el resultado a quien llamó (para el programa)
-# print  -> muestra en pantalla (para el usuario)
-# Asignar a una variable local NO es devolver. Esa variable muere.
+# LLAMAR ES UNA CALCULADORA — necesita las tres partes:
+#   resultado  =  convert( lo_que_le_paso )
+#      ↑            ↑            ↑
+#   guardo       la llamo    le doy el dato
+# Sin el "resultado =" el valor se pierde.
+#
+# EL "=" SE LEE DE DERECHA A IZQUIERDA:
+#   "calculá lo de la derecha, guardalo con el nombre de la izquierda"
+#   El nombre NUEVO va SIEMPRE a la izquierda.
+#   nombre = convert(dato)      sí
+#   convert(dato) = nombre      SyntaxError: cannot assign to function call
+#
+# return TERMINA LA FUNCIÓN EN EL ACTO.
+#   Las líneas que siguen no corren.
+#   NUNCA adentro de un loop que quiero que dé todas las vueltas.
+#   Va al final, o en una salida temprana deliberada.
+#
+# return vs print
+#   return -> devuelve el valor a quien llamó (para el programa)
+#   print  -> muestra en pantalla (para el usuario)
+#   Asignar a una variable local NO es devolver: esa variable muere.
+#
+# SCOPE: cada función solo conoce sus propios parámetros y lo que crea.
+#   Si main tiene "plate" y is_valid tiene "s", adentro de is_valid
+#   uso "s". Usar "plate" -> NameError.
 #
 # Vocabulario: parámetro = el nombre en el def
 #              argumento = el valor real que paso al llamar
 
 # ----------------------------------------------------------
-# EL PATRÓN main() + funciones auxiliares
+# 2.8 EL PATRÓN main() + auxiliares
 # ----------------------------------------------------------
-#   funcion_logica  -> recibe, transforma, RETURN. No habla con nadie.
-#   main()          -> pide input, la llama, IMPRIME.
-#   main()          -> al final del archivo, para que algo se ejecute
+#   funcion_logica  recibe, transforma, RETURN. No habla con nadie.
+#   main()          pide input, la llama, IMPRIME.
+#
+# Cada función UN trabajo. Si están cruzadas, no funciona.
+#   convert   ENTRA "7:21" (string)  ->  SALE 7.35 (número)
+#   main      no recibe nada         ->  no devuelve nada, imprime
 #
 # Se separan para poder TESTEAR la lógica sin teclado.
-# No se puede testear algo que pide input e imprime.
-# Sí se puede testear una función que recibe X y devuelve Y.
 
-
-# ##########################################################
-#  4. DECIDIR Y COMPARAR
-# ##########################################################
+# ----------------------------------------------------------
+# 2.9 if __name__ == "__main__":
+# ----------------------------------------------------------
+#   if __name__ == "__main__":
+#       main()
 #
+# Un .py se puede EJECUTAR (python3 archivo.py) o IMPORTAR
+# (otro archivo quiere usar mis funciones).
+# Al importar, Python corre todo lo del nivel de afuera — incluido
+# un main() suelto. Eso ROMPE LOS TESTS de check50, que importa el
+# archivo para probar las funciones por separado.
+#
+# La guarda hace que main() corra SOLO al ejecutar directo.
+# Desde meal.py en adelante, todos los ejercicios de CS50P la llevan.
+
+# ----------------------------------------------------------
+# 2.10 DECIDIR Y COMPARAR
+# ----------------------------------------------------------
 # ==  igual     !=  distinto     <  >  <=  >=
 # and   or   not
-# x in ("a", "b", "c")  -> más limpio que x=="a" or x=="b" or x=="c"
-
-# ----------------------------------------------------------
+#
+# LOS TRES QUE SE CONFUNDEN:
+#   is / is not    ¿son EL MISMO OBJETO?   casi nunca es lo que quiero
+#   == / !=        ¿valen LO MISMO?
+#   in / not in    ¿está CONTENIDO en?     membresía
+#
+#   letra not in "aeiou"     sí, es membresía
+#   letra is not "aeiou"     SIEMPRE True. No compara lo que creo.
+#
+# in funciona sobre string, lista y diccionario (en el dict busca CLAVES).
+#
+# CADA LADO DEL or / and TIENE QUE SER UNA COMPARACIÓN COMPLETA:
+#   if x == 5 or x == 10 or x == 25:     sí
+#   if x == 5 or 10 or 25:               MAL — siempre True, no avisa
+#   if " " or "." not in plate:          MAL — mismo bug
+#   if x in [5, 10, 25]:                 mejor que todo lo anterior
+#
+# COMPARACIÓN ENCADENADA — leerla como dos unidas por "y":
+#   7 <= t <= 8   ->  (7 <= t) y (t <= 8)     "entre 7 y 8"
+#   7 <= t >= 8   ->  (7 <= t) y (t >= 8)     "mayor que 8". MAL.
+#   Los dos signos tienen que apuntar para el mismo lado.
+#
 # if / elif / else
-# ----------------------------------------------------------
-# Se DETIENE en la primera condición verdadera.
-# -> ordenar de lo MÁS ESPECÍFICO a lo más general.
-#    Si "hello" va después de "h", nunca se alcanza.
-
-# ----------------------------------------------------------
+#   Se DETIENE en la primera condición verdadera.
+#   -> ordenar de lo MÁS ESPECÍFICO a lo más general.
+#   Con ifs sueltos, Python evalúa todos. Si los casos son excluyentes, elif.
+#   Un if SIN else significa "en el otro caso, no hago nada". Es válido.
+#
 # match / case
-# ----------------------------------------------------------
-# Para comparar UN valor contra varias opciones fijas.
-#   case "a" | "b":   el | es un OR: varios valores, misma respuesta
-#   case _:           el resto (como un else)
+#   case "a" | "b":   el | es un OR
+#   case _:           el resto
 
 # ----------------------------------------------------------
-# NORMALIZAR ANTES DE COMPARAR
+# 2.11 LOOPS
 # ----------------------------------------------------------
-# input(...).strip().casefold()  -> el usuario puede escribir como quiera
+# for    recorrer algo que YA TENGO y sé cuánto mide
+#        (un string, una lista, un range, un diccionario)
+# while  repetir MIENTRAS una condición sea verdadera
+#        (no sé de antemano cuántas vueltas van a ser)
 #
-# PERO: hay que normalizar LOS DOS LADOS del ==.
+# Un for sobre un STRING da UN CARÁCTER por vuelta.
+# Un for sobre una LISTA da un elemento por vuelta.
+#
+#   for c in s:              cada carácter
+#   for _ in range(3):       3 vueltas, no me importa el número
+#                            (_ = variable que no voy a usar)
+#   for i in range(len(lista)):   cuando necesito el índice
+#
+# range(n) va de 0 a n-1, o sea n vueltas.
+#   range(10) -> 0,1,2...9   son DIEZ vueltas
+#   (Lo tenía mal anotado: para 10 items va range(10), no range(9).)
+#
+# WHILE — LA REGLA DE ORO
+#   1. La variable de la condición nace ANTES del loop.
+#   2. Adentro del loop, algo LA MODIFICA.
+#   3. Si no, es infinito. Se corta con ⌃+C.
+#
+#   Un while bien escrito NO necesita break: la condición corta sola.
+#
+# EL ORDEN ADENTRO DEL WHILE DECIDE QUÉ SE IMPRIME:
+#   while falta > 0:
+#       print(falta)        <- mostrar PRIMERO
+#       pedir dato
+#       restar
+#   print(cambio)           <- afuera: solo cuando ya terminó
+#   Así nunca imprime el "falta: 0", porque chequea antes de entrar.
+#
+# break      salir del loop ya
+# continue   saltear el resto de ESTA vuelta y seguir con la próxima
+#
+# += y -=   incrementar / decrementar (más pythonico que x = x + 1)
+#           Con números suma. Con strings PEGA texto.
+
+# ----------------------------------------------------------
+# 2.12 LISTAS
+# ----------------------------------------------------------
+# lista = ["Luru", "Kike", "Botto"]
+#
+#   lista[0]        primer elemento
+#   lista[0:3]      un pedazo (la derecha se excluye)
+#   len(lista)      cuántos
+#   x in lista      ¿está?
+#
+# print(lista)        imprime la lista entera con corchetes
+# for x in lista:     imprime uno por línea
+#
+# Para tener el número de orden junto al valor:
+#   for i in range(len(friends)):
+#       print(i + 1, friends[i])      (+1 porque los índices arrancan en 0)
+
+# ----------------------------------------------------------
+# 2.13 DICCIONARIOS
+# ----------------------------------------------------------
+# Guardan pares CLAVE : VALOR. Se buscan por clave, no por posición.
+#
+#   fruits = {
+#       "Apple": 130,
+#       "Banana": 110,
+#   }
+#
+#   fruits["Apple"]        -> 130      CORCHETES, no paréntesis
+#   fruits("Apple")        -> TypeError: 'dict' object is not callable
+#   fruits["Mango"]        -> KeyError (la clave no existe: explota)
+#   "Apple" in fruits      -> True     (pregunta por CLAVES)
+#   fruits.get("Mango")    -> None     (no explota)
+#
+# LAS CLAVES NO SE REPITEN. Si repito una, el valor nuevo pisa al viejo.
+#   {"fruit": "Apple", "calories": 130,
+#    "fruit": "Banana", "calories": 110}   -> queda UN diccionario de 2 items
+#   La clave es el dato POR EL QUE BUSCO, el valor es lo que QUIERO OBTENER.
+#   Como un VLOOKUP de dos columnas.
+#
+# Recorrerlo da las CLAVES:
+#   for nombre in fruits:
+#       print(nombre, fruits[nombre])
+#
+# LISTA DE DICCIONARIOS — cuando cada item tiene VARIOS atributos:
+#   amigos = [
+#       {"name": "Luru", "casa": "Lapis", "hobbie": "Bici"},
+#       {"name": "Kike", "casa": "Lapis", "hobbie": None},
+#   ]
+#   for amigo in amigos:
+#       print(amigo["name"], amigo["casa"])
+#
+#   Es un dataframe (filas con columnas). Hay que RECORRERLO para buscar.
+#   El dict plano es un VLOOKUP: acceso directo, sin loop.
+#   Con un solo dato por clave -> dict plano. Con varios -> lista de dicts.
+#   (En la semana 4, lo que devuelve un LLM estructurado es esto.)
+#
+# None = "no hay valor". No es 0 ni "" ni False. No da error.
+
+
+# ##########################################################
+# ##########################################################
+#  PARTE 3 · PATRONES QUE SE REPITEN
+# ##########################################################
+# ##########################################################
+
+# ----------------------------------------------------------
+# 3.1 EL ACUMULADOR      (camel.py, twttr.py)
+# ----------------------------------------------------------
+#   resultado = ""              <- AFUERA del loop. Nace vacío.
+#   for letra in palabra:
+#       resultado += algo       <- ADENTRO. Crece cada vuelta.
+#   print(resultado)            <- AFUERA, después. UN solo print.
+#
+# Si la variable nace ADENTRO del loop, se reinicia cada vuelta
+# y pierdo todo lo acumulado.
+#
+# El VALOR INICIAL define qué tipo de acumulador es:
+#   texto = ""   acumula texto   ("a" + "x" = "ax")
+#   conteo = 0   cuenta          (1 + 1 = 2)
+#
+# EL ERROR QUE MÁS ME COSTÓ:
+#   poner print() adentro del loop.
+#   El if NO decide qué imprimir -> decide QUÉ AGREGAR a la variable.
+#   Adentro del for no va ningún print (salvo para debuggear).
+
+# ----------------------------------------------------------
+# 3.2 LA BANDERA         (plates.py)
+# ----------------------------------------------------------
+# Una variable que RECUERDA algo entre vueltas del loop.
+# Mismo mecanismo que el acumulador, pero guarda un sí/no.
+#
+#   vi_un_numero = False        <- afuera, arranca en "no"
+#   for c in s:
+#       if c.isdigit():
+#           if vi_un_numero == False and c == "0":
+#               return False    <- solo para el PRIMER dígito
+#           vi_un_numero = True <- para TODO dígito
+#       else:
+#           if vi_un_numero == True:
+#               return False    <- una letra que llegó tarde
+#
+# Sirve cuando la pregunta "¿esto está mal?" depende de lo que pasó antes.
+# Una bandera que se prende pero NUNCA SE CONSULTA en un if no sirve de nada.
+
+# ----------------------------------------------------------
+# 3.3 "BUSCÁ EL FALLO"   (plates.py)
+# ----------------------------------------------------------
+# Cuando TODAS las condiciones deben cumplirse:
+#
+#   if <regla 1 falla>: return False
+#   if <regla 2 falla>: return False
+#   if <regla 3 falla>: return False
+#   return True                      <- solo se alcanza si sobrevivió todo
+#
+# Cada if describe el CASO MALO y sale temprano.
+# UN SOLO return True, al final, afuera de todos los ifs.
+#
+# Al revés (cada regla devuelve True) alcanza con cumplir UNA sola
+# para declararlo válido. Es el error que tuve toda la tarde.
+#
+# Y una regla NO es un valor con el que comparar: es una PREGUNTA
+# que le hago al dato, y la respuesta es True o False.
+#   s.isalnum()  YA ES la respuesta. No se compara con nada más.
+
+# ----------------------------------------------------------
+# 3.4 NORMALIZAR PARA COMPARAR, NO PARA GUARDAR
+# ----------------------------------------------------------
+# El .lower() va del lado de la PREGUNTA, no del dato que voy a usar.
+#
+#   if letter.lower() not in "aeiou":
+#       resultado += letter          <- la letra ORIGINAL, con su mayúscula
+#
+# .lower() no modifica letter: produce una copia temporal para comparar.
+#
+# Y HAY QUE NORMALIZAR LOS DOS LADOS del ==:
 #   answer == "Forty two"
-#      ↑           ↑
-#   minúscula   mayúscula  ->  NUNCA matchea
-#
-# Si normalizo a minúscula, los valores de comparación van en minúscula.
+#     ↑            ↑
+#  minúscula   mayúscula   -> NUNCA matchea
 # Python no toca lo que yo escribo en el código.
 #
 # La normalización va en UN SOLO LUGAR: donde el dato entra.
-# No repartida en cada comparación.
-#
-# Qué NO cubre: espacios en el MEDIO, y sinónimos
-# ("cuarenta y dos" no es otra forma de escribir "forty two").
+# No cubre: espacios en el MEDIO, ni sinónimos.
+
+# ----------------------------------------------------------
+# 3.5 EL DATO DEL USUARIO NO ES UNA INSTRUCCIÓN
+# ----------------------------------------------------------
+# Si el usuario escribe "+", eso es el TEXTO "+" guardado en una variable.
+# Python no lo ejecuta. Yo tengo que MIRAR ese dato con un if y decidir.
+# Igual con "a.m.", con el operador, con la moneda.
+# Lo leo, no lo deduzco.
 
 
 # ##########################################################
-#  5. ERRORES: QUÉ SIGNIFICAN
 # ##########################################################
+#  PARTE 4 · MIS ERRORES
+# ##########################################################
+# ##########################################################
+
+# ----------------------------------------------------------
+# 4.1 LOS QUE REPITO (por orden de tiempo perdido)
+# ----------------------------------------------------------
+# 1. INVENTAR SINTAXIS Y NO CORRERLA.
+#    .isnum, .add, len(6), int(a, b), .split(":", ",")
+#    Escribo 15 líneas sobre algo que nunca corrió.
+#    -> REPL primero. Una línea. 30 segundos.
 #
-# command not found: X
-#   zsh no conoce X. No está instalado, o no es un comando
-#   (hello.py no es un comando: se corre con python3).
+# 2. CORRER SIN GUARDAR. La bolita ● tiene que ser X. ⌘+S.
+#
+# 3. ESTAR EN LA CARPETA EQUIVOCADA. Leer la palabra antes del %.
+#
+# 4. == cuando quiero =, o los lados del = invertidos.
+#    ==  pregunta si son iguales, devuelve True/False
+#    =   guarda lo de la derecha en el nombre de la izquierda
+#    El nombre nuevo va SIEMPRE a la izquierda.
+#
+# 5. USAR LA VARIABLE EQUIVOCADA adentro del loop.
+#    Imprimir `word` en vez de `letter`, preguntar por `s` en vez de `c`,
+#    mirar `s[0]` cuando quiero el carácter de esta vuelta.
+#    Adentro del for, el dato de esta vuelta es la variable del for.
+#
+# 6. LÍNEAS QUE CALCULAN Y TIRAN EL RESULTADO.
+#    z != 0     /     s.isalnum()     /     convert(dato)   sueltas.
+#    Para que una condición HAGA algo tiene que estar en un if.
+#    Para que un valor sobreviva tiene que guardarse con =.
+#
+# 7. return ADENTRO DE UN LOOP que tiene que dar todas las vueltas.
+#
+# 8. NORMALIZAR UN SOLO LADO de la comparación.
+#
+# 9. PONER EL FORMATO AFUERA de las llaves del f-string.
+#
+# 10. VALORES ESCRITOS A MANO que deberían ser variables.
+#     print("Change Owed: 0") cuando el cambio puede ser 10.
+
+# ----------------------------------------------------------
+# 4.2 QUÉ SIGNIFICA CADA ERROR
+# ----------------------------------------------------------
+# LEER DE ABAJO HACIA ARRIBA. La última línea dice QUÉ,
+# las de arriba DÓNDE, y el ^^^^ marca la posición exacta.
 #
 # NameError: name 'X' is not defined
-#   Python leyó X como VARIABLE y no existe.
-#   Una palabra suelta sin comillas nunca es texto.
+#   Python leyó X como variable y no existe.
+#   O es una palabra suelta sin comillas, o es una variable de OTRA función.
 #
-# AttributeError: 'float' object has no attribute 'add'
-#   Ese método no existe PARA ESE TIPO. O me lo inventé.
-#   Los números no tienen métodos de texto.
+# AttributeError: 'str' object has no attribute 'isnum'
+#   Ese método no existe PARA ESE TIPO, o me lo inventé.
 #
 # AttributeError: 'NoneType' object has no attribute 'strip'
-#   Le apliqué un método al resultado de print().
-#   print() NO devuelve nada.
-#     print(variable.lower())   <- sí
-#     print(variable).lower()   <- no
+#   Le apliqué un método al resultado de print(). print() no devuelve nada.
 #
-# TypeError: can't multiply sequence by non-int of type 'str'
-#   Estoy operando con textos creyendo que son números.
-#   Probablemente una función devolvió el parámetro sin convertir.
+# UnboundLocalError: cannot access local variable 'x'
+#   La variable se crea SOLO adentro de un if que no se cumplió.
+#   -> crearla antes, afuera.
+#
+# TypeError: 'dict' object is not callable
+#   Usé paréntesis donde van corchetes. fruits("Apple") -> fruits["Apple"]
+#
+# TypeError: object of type 'int' has no len()
+#   len() mide cosas con longitud. Un número no tiene.
+#
+# TypeError: 'str' object cannot be interpreted as an integer
+#   Le pasé texto donde iba un número.
+#   Clásico: .split(" ", ",") — el 2do argumento de split es un número.
+#
+# TypeError: '<=' not supported between 'int' and 'str'
+#   Comparo un número con un string. Falta convertir, o estoy comparando
+#   la variable equivocada (el string original en vez del número).
+#
+# TypeError: can't multiply sequence by non-int
+#   Opero con textos creyendo que son números. Alguna función devolvió
+#   el parámetro sin convertir.
+#
+# ValueError: invalid literal for int() with base 10: '1 + 1'
+#   Quise convertir a número algo que no lo es entero.
+#   Casi siempre: convertí ANTES de partir.
+#
+# ValueError: not enough values to unpack
+#   Los nombres a la izquierda del = no coinciden con la cantidad
+#   de elementos que devolvió el split.
+#
+# KeyError: 'Mango'
+#   Esa clave no está en el diccionario. Preguntar con `in` antes.
+#
+# SyntaxError: cannot assign to function call here
+#   Puse la llamada a la izquierda del =. El nombre nuevo va primero.
 #
 # SyntaxError: invalid syntax
-#   Falta un paréntesis, una coma, comillas o los dos puntos.
-#   Mirar el ^^^^ que marca la posición exacta.
+#   Falta paréntesis, coma, comillas o los dos puntos.
+#
+# ZeroDivisionError
+#   División por cero. Se previene con un if ANTES de dividir
+#   (o con try/except, semana 3).
+#
+# command not found: X
+#   zsh no conoce X. hello.py no es un comando: se corre con python3.
 #
 # can't open file '...': No such file or directory
 #   Estoy parado en otra carpeta. Leer el prompt y hacer cd.
 
 
 # ##########################################################
-#  6. RUTINA DE CADA EJERCICIO DE CS50P
 # ##########################################################
-#
-# 1. Leer la página ENTERA antes de escribir.
-#    La consigna está en "Implementation Details", arriba del Demo.
-# 2. Mirar el Demo carácter por carácter: espacios, mensajes, mayúsculas.
-# 3. cd ~/ai-plan/semana-01/<carpeta>   (mkdir si no existe)
-# 4. Archivo con el nombre EXACTO que pide el enunciado.
-# 5. Escribir -> ⌘+S -> python3 archivo.py
-# 6. Probar YO los casos del enunciado ANTES de check50.
-# 7. check50 cs50/problems/2022/python/<ejercicio>
-# 8. Si sale rojo: abrir la URL que da check50. Siempre.
-# 9. submit50 cs50/problems/2022/python/<ejercicio>
+#  PARTE 5 · RUTINA
+# ##########################################################
+# ##########################################################
 
 # ----------------------------------------------------------
-# CHECKLIST ANTES DE PEDIR AYUDA
+# 5.1 CADA EJERCICIO DE CS50P
 # ----------------------------------------------------------
-# [ ] ¿Guardé? (⌘+S — la bolita tiene que ser X)
-# [ ] ¿Estoy en la carpeta correcta? (leer el prompt)
-# [ ] ¿Cada función DEVUELVE o solo asigna a una variable local?
-# [ ] ¿Uso el PARÁMETRO adentro, no el nombre de la función?
-# [ ] ¿El método que uso existe para ESE tipo?
-# [ ] ¿El formato está adentro de las llaves y en la función correcta?
+# 1. Leer la página ENTERA antes de escribir.
+#    La consigna está en "Implementation Details", arriba del Demo.
+# 2. Escribir las reglas en una lista, cada una como PREGUNTA.
+#    ("¿son todos letras o números?" — no "letras o números")
+# 3. Mirar el Demo carácter por carácter: espacios, mayúsculas, dos puntos.
+#    check50 compara LITERAL. Copio el texto del enunciado.
+# 4. cd a la carpeta del ejercicio. Archivo con el nombre EXACTO.
+# 5. UNA regla / UN paso por vez. Correr. Verificar. Recién ahí la siguiente.
+# 6. Probar YO los casos del enunciado ANTES de check50,
+#    incluyendo los "feos": el que se pasa, el vacío, el de dos palabras.
+# 7. check50 cs50/problems/2022/python/<ejercicio>
+# 8. Si sale rojo, leer QUÉ input falló. Correr ese input a mano.
+# 9. submit50 (los dos comandos son distintos: check50 no entrega nada)
+
+# ----------------------------------------------------------
+# 5.2 CHECKLIST ANTES DE PEDIR AYUDA
+# ----------------------------------------------------------
+# [ ] ¿Guardé? (⌘+S — bolita ● -> X)
+# [ ] ¿Corrí el código, o solo lo escribí?
+# [ ] ¿Verifiqué en el REPL los métodos que usé?
+# [ ] ¿Estoy en la carpeta correcta?
+# [ ] ¿Uso la variable de ESTA vuelta del loop, o la de afuera?
+# [ ] ¿Hay alguna línea que calcula algo y no lo guarda?
+# [ ] ¿El acumulador/bandera nace AFUERA del loop?
+# [ ] ¿La indentación empareja los if/else como quiero?
+# [ ] ¿Cada función DEVUELVE, o solo asigna a una variable local?
 # [ ] ¿Normalicé los dos lados de la comparación?
 # [ ] ¿Probé con más de un caso, incluyendo uno "feo"?
 
 # ----------------------------------------------------------
-# SI ME TRABO (en este orden)
+# 5.3 SI ME TRABO (en este orden)
 # ----------------------------------------------------------
 # 0-5 min    Leer el error ENTERO, de abajo hacia arriba.
-#            La última línea dice QUÉ pasó, las de arriba DÓNDE.
 # 5-15 min   print() de las variables justo antes de la línea que falla.
+#            (y borrarlo después)
 # 15-20 min  Buscar el mensaje de error textual en Google.
 # 20+ min    Preguntar: "no me des el código, explicame por qué pasa
 #            y decime en qué línea mirar".
 # NUNCA      Copiar y pegar algo que no entiendo.
-
-
-# ##########################################################
-#  7. CERRAR EL DÍA
-# ##########################################################
 #
-# cd ~/ai-plan
-# git add .
-# git commit -m "dia N: lo que hice"
-# git push
-#
-# Aunque esté roto o incompleto: el commit es mi botón de deshacer real.
-# Un commit es una FOTO congelada, no una vista en vivo.
-# El link de un commit viejo muestra siempre esa foto vieja.
+# SI SE ENREDA FEO — el método que funcionó:
+#   Borrar todo y volver a DOS líneas. Correr. Verificar.
+#   Agregar UNA línea. Correr. Verificar.
+#   Es más rápido que seguir moviendo piezas de algo que nunca corrió.
 
-# ==========================================================
-# 8 · CERRAR EL DÍA CON GIT
-# ==========================================================
-
-# Los 3 comandos, siempre en ~/ai-plan (verificar con pwd):
-#
+# ----------------------------------------------------------
+# 5.4 CERRAR EL DÍA
+# ----------------------------------------------------------
+#   cd ~/ai-plan
 #   git add .
-#   git commit -m "dia 4"
+#   git commit -m "dia N: lo que hice"
 #   git push
 #
-# Qué hace cada uno:
-#
-# git add .        --> el "." significa "todo lo de esta carpeta hacia abajo".
-#                      NO guarda nada. Pone los archivos en el staging area,
-#                      que es la mesa donde armo el próximo commit.
-#
-# git commit -m    --> congela la foto y le pone nombre. El -m es el mensaje.
-#                      Cada commit es un estado completo al que puedo volver.
-#                      Devuelve un hash (ej: 64a6069) = nombre único de esa foto.
-#                      El primero dice "root-commit"; los demás, "1 parent".
-#
-# git push         --> sube los commits a GitHub. Es el único que usa internet.
-#                      Sin push, los commits existen solo en mi Mac.
-#
-# Por qué "git push" solo, sin "-u origin main":
-#   el -u del primer push dejó fijada la relación main <-> origin/main.
-#   Desde ahí, "git push" ya sabe a dónde va.
-
-# git status --> ANTES de add. Me muestra qué ve Git como nuevo o cambiado.
-#                Es el único momento barato para darme cuenta de que estoy
-#                por subir algo que no quiero.
-
-# --- El .gitignore ---
-# Archivo en la RAÍZ de ai-plan (mismo nivel que semana-01), un patrón por línea:
-#
-#   .env
-#   __pycache__/
-#   .DS_Store
-#
-# SIN espacios adelante: Git compara el patrón tal cual, y "  .env" no coincide
-# con el archivo .env. La regla queda muerta y no avisa.
-#
-# Por qué importa: el repo es PÚBLICO y el día 10 la API key va en .env.
-# Un commit no es un archivo que borro: es una foto que queda en el historial.
-# Si subo una key, la doy por perdida — la anulo y saco otra.
-
-# Regla del plan: el día cierra con un commit, aunque el código esté roto.
-
-# --- interpreter.py (PS1) — lo que me costó ---
-
-# 1. UN solo input. Si el usuario escribe "1 + 1" completo,
-#    los tres datos ya están adentro de ese string.
-#    No preguntar tres veces.
-
-# texto.split(" ")  --> devuelve una LISTA: ['1', '+', '1']
-# a, b, c = lista   --> reparte: un nombre por elemento.
-#                       Son DOS operaciones distintas: partir y repartir.
-#                       Si la cantidad de nombres no coincide, falla.
-
-# 2. Los nombres nuevos van a la IZQUIERDA del "=".
-#    El "=" se lee de derecha a izquierda:
-#    "calculá lo de la derecha, guardalo con el nombre de la izquierda".
-#    Lo que va entre comillas es TEXTO, nunca un nombre de variable.
-
-# 3. Python lee de arriba hacia abajo.
-#    Una línea solo puede usar cosas creadas en una línea de MÁS ARRIBA.
-
-# 4. Después del split todo es string. float() convierte UN valor,
-#    no una lista. Y el operador NO se convierte: queda string
-#    porque se compara con "+", "-", "*", "/".
-
-# 5. El operador que escribe el usuario es un DATO, no una instrucción.
-#    Python no lo ejecuta. Yo miro ese dato con un if y decido la cuenta.
-
-# 6. Cada rama GUARDA en result; el print va uno solo al final.
-#    Así el formato .1f se escribe una vez y no cuatro.
-
-# 7. Una línea suelta como "z != 0" calcula y tira el resultado.
-#    Para que una condición haga algo tiene que estar en un if.
-
-# 8. check50 busca el archivo en la carpeta donde estoy parado.
-#    Leer la palabra antes del % ANTES de correrlo.
-
-# MÉTODO CUANDO ME TRABO FEO:
-#    Borrar todo y volver a 2 líneas. Correr. Verificar.
-#    Agregar UNA línea. Correr. Verificar.
-#    Adivinar nombres de métodos (.pop, .add) es lo que más tiempo me cuesta.
+# Aunque esté roto o incompleto. Regla del plan.
