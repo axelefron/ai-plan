@@ -1,6 +1,7 @@
 # ==========================================================
 #  GUÍA PERSONAL — Axel · MacBook Air (macOS, zsh)
-#  Reescrita al cerrar la Semana 2 (PS0, PS1 y PS2 completos).
+#  Reescrita al cerrar la Semana 2. Actualizada con Semana 3 (Exceptions).
+#  PS0, PS1, PS2 y PS3 completos.
 #
 #  CÓMO ESTÁ ORGANIZADA:
 #    PARTE 1 · ENTORNO     terminal, VS Code, git
@@ -492,6 +493,66 @@
 #
 # None = "no hay valor". No es 0 ni "" ni False. No da error.
 
+# ----------------------------------------------------------
+# 2.14 TRY / EXCEPT
+# ----------------------------------------------------------
+#   try:
+#       <lo que puede romperse>
+#   except <TipoDeError>:
+#       <qué hacer con ESE error>
+#   else:
+#       <corre SOLO si no hubo ninguna excepción>
+#
+# El try envuelve SOLO lo que puede fallar.
+# Envolver de más hace que el except atrape cosas que yo quería
+# manejar de otra forma, y el bug no avisa.
+#
+# VARIOS except, UNO POR ERROR, cada uno con SU reacción:
+#   except KeyError:
+#       pass        <- item inválido: ignorar y volver a preguntar
+#   except EOFError:
+#       break       <- Ctrl-D: salir del loop
+#
+# Python usa el PRIMER except que coincida.
+# Meter todos los errores en un solo except les da a todos la misma
+# reacción. Ese fue mi bug en taqueria: "burger" cerraba el programa.
+#
+# pass  = no hago nada, sigo
+# break = salgo del loop
+#
+# NO listar errores que no pueden pasar. Engaña al que lee el código:
+# parece que maneja casos que en realidad no existen.
+
+# ----------------------------------------------------------
+# 2.15 try/except  vs  if       (la distinción que importa)
+# ----------------------------------------------------------
+# try/except  atrapa lo que ROMPE.
+#     "cat/dog"  -> ValueError al convertir
+#     "3/0"      -> ZeroDivisionError al dividir
+#
+# if          maneja lo que ANDA PERO NO SIRVE.
+#     "4/3"  -> 1.33 es un número perfectamente válido,
+#               pero el enunciado lo rechaza.
+#     "-1/4" -> -0.25 tampoco rompe nada. También se rechaza.
+#
+# El if de validación va en el else del try, antes del return,
+# o con un continue adentro del try.
+#
+# AL VALIDAR UN RANGO, MIRAR LOS DOS EXTREMOS.
+# "result > 1" solo cubre el techo. El negativo pasa igual.
+# El caso raro que no se me ocurre probar es el que rompe el check50.
+
+# ----------------------------------------------------------
+# 2.16 ERRORES COMO SEÑAL, NO COMO FALLA
+# ----------------------------------------------------------
+# EOFError = Ctrl-D = "no hay más entrada".
+# No es un error del usuario: es cómo se avisa que terminó.
+# Se atrapa con except y se sale con break.
+#
+# Ctrl-D  -> termina la entrada (EOFError)
+# Ctrl-C  -> cancela el programa (KeyboardInterrupt)
+# Son distintos. Ctrl-C corta un loop infinito; Ctrl-D cierra la entrada.
+
 
 # ##########################################################
 # ##########################################################
@@ -627,6 +688,12 @@
 #
 # 10. VALORES ESCRITOS A MANO que deberían ser variables.
 #     print("Change Owed: 0") cuando el cambio puede ser 10.
+#
+# 11. MEZCLAR ESCALAS. Comparar la fracción (0.75) contra umbrales
+#     pensados para el porcentaje (99). Cada variable tiene su unidad:
+#     fraction = 0.75   /   percent = 75. No son intercambiables.
+#
+# 12. UN SOLO except PARA ERRORES QUE NECESITAN REACCIONES DISTINTAS.
 
 # ----------------------------------------------------------
 # 4.2 QUÉ SIGNIFICA CADA ERROR
@@ -675,7 +742,14 @@
 #   de elementos que devolvió el split.
 #
 # KeyError: 'Mango'
-#   Esa clave no está en el diccionario. Preguntar con `in` antes.
+#   Esa clave no está en el diccionario.
+#   Se maneja con `in` antes, o atrapándolo con except KeyError.
+#
+# EOFError
+#   El usuario apretó Ctrl-D. No es una falla: es el fin de la entrada.
+#
+# KeyboardInterrupt
+#   Ctrl-C. Cancelé el programa a mano.
 #
 # SyntaxError: cannot assign to function call here
 #   Puse la llamada a la izquierda del =. El nombre nuevo va primero.
@@ -730,7 +804,11 @@
 # [ ] ¿La indentación empareja los if/else como quiero?
 # [ ] ¿Cada función DEVUELVE, o solo asigna a una variable local?
 # [ ] ¿Normalicé los dos lados de la comparación?
+# [ ] ¿Cada except tiene la reacción que corresponde a ESE error?
+# [ ] ¿Validé los DOS extremos del rango, no solo uno?
+# [ ] ¿Estoy comparando valores de la misma escala/unidad?
 # [ ] ¿Probé con más de un caso, incluyendo uno "feo"?
+#     (el negativo, el cero, el que se pasa, el que no existe)
 
 # ----------------------------------------------------------
 # 5.3 SI ME TRABO (en este orden)
