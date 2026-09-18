@@ -17,11 +17,11 @@
 # - it can refer to python files and functions but often APIS refer to 3rd party servicers to use in your code and talk to 
 # - pretends to be a browser, connect to the 3rd party API on a server and downloads data to use in your program
 # requests --> common python package API that requests in the web with python code
-# JSON --> type of value/data (Java Script Open Location) --> a language (text) format for exchanging data between computers
+# JSON --> type of value/data (Java Script Open Notation) --> a language (text) format for exchanging data between computers
 
 """
 import random
-coinflip = random.choice(["Heads", "Tails"])) 
+coinflip = random.choice(["Heads", "Tails"]) 
 
 from random import choice
 coinflip = choice(["Heads", "Tails"])
