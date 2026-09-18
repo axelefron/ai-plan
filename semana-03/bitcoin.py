@@ -4,7 +4,6 @@ import requests
 import sys
 import json
 
-
 load_dotenv()
 myAPIkey = os.getenv("COINCAP_API_KEY")
 
