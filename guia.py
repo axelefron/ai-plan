@@ -1,7 +1,8 @@
 # ==========================================================
 #  GUÍA PERSONAL — Axel · MacBook Air (macOS, zsh)
-#  Reescrita al cerrar la SEMANA 3 (Librerías, APIs y Unit Tests).
-#  CS50P: Weeks 0-5 vistas. PS0 a PS5 entregados.
+#  Actualizada al TERMINAR CS50P (Weeks 0-6, PS0 a PS6 entregados).
+#  Cierra el bloque de Python del plan. De acá en adelante: APIs de LLMs,
+#  agentes y web. Esta guía pasa a ser material de consulta, no de estudio.
 #
 #  CÓMO ESTÁ ORGANIZADA:
 #    PARTE 1 · ENTORNO     terminal, VS Code, git, venv, secretos
@@ -838,6 +839,84 @@
 # corre MIS TESTS contra versiones rotas a propósito, y verifica que
 # los detecten. Un test flojo sale en rojo ahí.
 
+# ----------------------------------------------------------
+# 2.21 ARCHIVOS — open, with Y CSV      [nuevo · semana 4]
+# ----------------------------------------------------------
+# POR QUÉ EXISTEN: una lista vive en la MEMORIA del programa y se
+# borra cuando el programa termina. Un archivo queda en el disco.
+# Eso es persistencia: que los datos sobrevivan a la corrida.
+#
+#   with open(ruta, modo) as f:
+#       <trabajo con f>
+#   <acá el archivo YA ESTÁ CERRADO>
+#
+# El `with` cierra el archivo solo al salir del bloque, incluso si algo
+# explota adentro. Sin él hay que acordarse de f.close(). Siempre with.
+#
+# MODOS:
+#   "r"   leer (el default). Si el archivo no existe -> FileNotFoundError
+#   "w"   escribir DESDE CERO. Si existe, lo VACÍA. Si no existe, lo crea.
+#   "a"   append: agregar al final sin borrar lo que había
+#
+# Elegir mal el modo es destructivo: "w" sobre un archivo con datos
+# los borra sin preguntar.
+#
+# LEER TEXTO PLANO — tres formas, de peor a mejor:
+#   lines = f.readlines()     carga TODO el archivo a una lista de una.
+#                             Anda, pero ocupa memoria de más.
+#   for line in f:            recorre línea por línea. Es lo normal.
+#   acumular en una lista     cuando necesito TODO junto para ordenar
+#                             o contar antes de mostrar.
+#
+# Cada línea leída trae el salto de línea del final pegado.
+#   .rstrip()   saca el "\n" (y cualquier espacio) del final
+#   Sin eso, cada print deja una línea en blanco de más.
+#
+# f.write(texto)   escribe. El "\n" lo pongo YO: write no salta de línea.
+#
+# sorted(coleccion)                 devuelve una copia ordenada (A→Z)
+# sorted(coleccion, reverse=True)   al revés (Z→A)
+#   Es función suelta, no método, y NO modifica el original: devuelve
+#   una copia. Para ordenar hay que tener todo junto antes -> por eso
+#   acumular en una lista y ordenar después de cerrar el archivo.
+#
+# OTROS TIPOS DE ARCHIVO: todo lo que no es texto (imágenes, audio,
+# video) son archivos BINARIOS — bytes crudos, no letras. Se abren con
+# librerías que saben interpretarlos: pillow (PIL) para imágenes, etc.
+# El open pelado no sirve para leerlos a ojo.
+#
+# CSV — dos formas de leer/escribir:
+#   csv.reader / csv.writer          trabajan con LISTAS (por posición)
+#   csv.DictReader / csv.DictWriter  trabajan con DICCIONARIOS (por nombre)
+# La versión Dict es más legible: row["house"] en vez de row[1].
+#
+#   reader = csv.DictReader(f)
+#       Usa la PRIMERA FILA del archivo como nombres de columna.
+#       Pasarle fieldnames= es decirle "este archivo NO tiene encabezado",
+#       y entonces la fila de títulos se procesa como si fuera un dato.
+#
+#   writer = csv.DictWriter(f, fieldnames=[...])
+#       Los fieldnames van acá, UNA vez, al crear el writer.
+#       writer.writeheader()      escribe la fila de títulos. Sin "=".
+#       writer.writerow({...})    una fila. Recibe un diccionario. Sin "=".
+#
+# writeheader() y writerow() escriben y no devuelven nada útil.
+# Asignarlas (writer = writer.writeheader()) destruye el writer.
+# Mismo caso que .append().
+#
+# Al escribir CSV va open(ruta, "w", newline="") para que no queden
+# líneas en blanco entre filas en algunos sistemas.
+#
+# EL PATRÓN "TRANSFORMAR UN ARCHIVO" (scourgify):
+#   Son DOS archivos y DOS bloques secuenciales, no uno anidado.
+#   1. abrir el de ENTRADA (sys.argv[1]), recorrerlo, ir armando una
+#      LISTA con los datos ya limpios
+#   2. cerrar eso, abrir el de SALIDA (sys.argv[2]) en "w", escribir
+#      el encabezado y después la lista
+#
+#   1 = entrada, 2 = salida. Siempre. Confundirlos hace que el programa
+#   lea y escriba el mismo archivo, y el "w" lo vacía antes de leerlo.
+
 
 # ##########################################################
 # ##########################################################
@@ -1014,6 +1093,26 @@
 #     o un except con pass que esconde la causa real.
 #
 # 20. OLVIDARME EL https:// en una URL.
+#
+# 21. USAR EL NOMBRE DE UN ERROR COMO SI FUERA UNA CONDICIÓN.
+#     elif FileNotFoundError:   -> siempre True, no compara nada.
+#     El nombre de un error va después de `except`, o en pytest.raises.
+#     Nunca en un if. No se PREGUNTA si algo va a fallar: se intenta.
+#
+# 22. INTERCAMBIAR sys.argv[1] Y sys.argv[2] entre el open y el mensaje
+#     de error. 1 = entrada, 2 = salida.
+#
+# 23. CONVERTIR UN COMENTARIO EXPLICATIVO EN UNA LÍNEA DE CÓDIGO.
+#     row["name"] is "last, name" era una descripción de qué contenía
+#     la variable, no una instrucción.
+#
+# 24. INTENTAR DOS OPERACIONES EN UN SOLO "=" CON DESBALANCE DE NOMBRES.
+#     a, b, c = algo.split(","), otra_cosa   -> tres nombres, dos valores.
+#     Dos operaciones distintas = dos líneas.
+#
+# 25. .strip() PARA UN ESPACIO QUE ESTÁ EN EL MEDIO.
+#     strip solo toca los extremos. "Bell, Katie".split(",") deja
+#     " Katie" con el espacio. El separador tiene que incluirlo.
 
 # ----------------------------------------------------------
 # 4.2 QUÉ SIGNIFICA CADA ERROR
@@ -1070,6 +1169,13 @@
 #
 # ValueError: not enough values to unpack
 #   Los nombres a la izquierda del = no coinciden con lo que devolvió split.
+#
+# FileNotFoundError
+#   El archivo no existe, o estoy parado en otra carpeta.
+#   No se previene con un if: se atrapa alrededor del open.
+#
+# AttributeError: 'NoneType' object has no attribute 'writerow'
+#   Asigné el resultado de writeheader() al writer y lo destruí.
 #
 # IndexError: list index out of range
 #   Pedí una posición que no existe. Clásico: sys.argv[1] sin argumento.
@@ -1187,3 +1293,28 @@
 # Aunque esté roto o incompleto. Regla del plan.
 #
 # La guía se actualiza UNA VEZ POR SEMANA, los viernes.
+
+# ----------------------------------------------------------
+# 5.6 CIERRE DEL BLOQUE DE PYTHON
+# ----------------------------------------------------------
+# CS50P terminado: Weeks 0 a 6, PS0 a PS6 entregados.
+#
+# Lo que sé hacer ahora y no sabía hace cuatro semanas:
+#   - separar un programa en funciones que reciben y devuelven
+#   - manejar errores en vez de que el programa explote
+#   - usar librerías de terceros y leer su documentación
+#   - pedirle datos a una API y navegar un JSON anidado
+#   - escribir tests que puedan fallar
+#   - leer y escribir archivos y CSVs
+#   - guardar secretos afuera del código
+#
+# De acá en adelante el cuello de botella deja de ser la sintaxis.
+# Esta guía pasa a ser referencia: se consulta cuando algo no anda,
+# no se estudia.
+#
+# Las partes que más van a seguir apareciendo:
+#   2.8 y 3.7   la función que recibe y devuelve  -> base de las evals
+#   2.13        diccionarios anidados             -> todo lo que devuelve un LLM
+#   2.19        APIs, requests y JSON             -> todo el mes 2
+#   2.14/2.15   try/except vs if                  -> cada llamada que puede fallar
+#   1.10        secretos                          -> cada API key nueva
