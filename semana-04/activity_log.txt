@@ -1,0 +1,10 @@
+2026-09-29 08:45 - Maria: standup, nothing notable
+2026-09-29 09:10 - Dev (Sam): merged PR #412 checkout API refactor to main
+2026-09-29 09:30 - Priya: started QA pass on mobile onboarding flow, ~60% done
+2026-09-29 10:05 - Sam: payment provider sandbox keys still not issued, asked vendor again (3rd day waiting). Blocks checkout launch Friday
+2026-09-29 11:00 - Maria: design review for pricing page — approved option B
+2026-09-29 13:20 - Leo: fixed login timeout bug (ticket #88), deployed to staging
+2026-09-29 14:00 - Priya: lunch & learn, no decisions
+2026-09-29 15:45 - Leo: started analytics event tracking for onboarding, expect done Wed
+2026-09-29 16:30 - Maria: legal hasn't reviewed new ToS copy, needed before pricing page goes live
+2026-09-29 17:10 - Sam: updated README
