@@ -1,15 +1,13 @@
 # ==========================================================
 #  GUÍA PERSONAL — Axel · MacBook Air (macOS, zsh)
-#  Actualizada al TERMINAR CS50P (Weeks 0-6, PS0 a PS6 entregados).
-#  Cierra el bloque de Python del plan. De acá en adelante: APIs de LLMs,
-#  agentes y web. Esta guía pasa a ser material de consulta, no de estudio.
+#  Actualizada al CERRAR EL MES 1 (2-oct-2026).
+#  CS50P completo + primer proyecto con la API de Claude + evals.
 #
-#  CÓMO ESTÁ ORGANIZADA:
-#    PARTE 1 · ENTORNO     terminal, VS Code, git, venv, secretos
-#    PARTE 2 · PYTHON      referencia por concepto
-#    PARTE 3 · PATRONES    las formas que se repiten en todo ejercicio
-#    PARTE 4 · MIS ERRORES lo que rompo yo + qué significa cada error
-#    PARTE 5 · RUTINA      cómo encaro un ejercicio y cómo cierro el día
+#  PARTE 1 · ENTORNO     terminal, git, venv, secretos
+#  PARTE 2 · PYTHON      referencia por concepto
+#  PARTE 3 · PATRONES    las formas que se repiten
+#  PARTE 4 · MIS ERRORES agrupados por familia + qué significa cada traceback
+#  PARTE 5 · RUTINA      cómo encaro algo y cómo cierro el día
 #
 #  La PARTE 2 se consulta cuando no me acuerdo cómo se escribe algo.
 #  La PARTE 4 se consulta cuando algo no anda. Son momentos distintos.
@@ -17,234 +15,185 @@
 
 
 # ##########################################################
-# ##########################################################
 #  PARTE 1 · ENTORNO
 # ##########################################################
-# ##########################################################
 
 # ----------------------------------------------------------
-# 1.1 ¿DÓNDE ESTOY?  (la pregunta que más me cuesta)
+# 1.1 ¿DÓNDE ESTOY? — la pregunta que más me cuesta
 # ----------------------------------------------------------
 # El prompt lo dice:
-#   axelefron@MacBook-Air-de-Axel-2 semana-03 %
-#                                   ^^^^^^^^^  carpeta actual
+#   (.venv) axelefron@MacBook-Air clasificador %
+#    ^^^^^                        ^^^^^^^^^^^  carpeta actual
+#      venv activo o no
 #
-# TODOS los comandos actúan desde donde estoy parado:
-#   python3 archivo.py   busca el archivo ACÁ
-#   check50 / pytest     buscan el archivo ACÁ
-#   git add .            agarra de ACÁ HACIA ABAJO, no todo el repo
-#   load_dotenv()        busca el .env desde ACÁ
+# TODO actúa desde donde estoy parado: python3, check50, pytest,
+# git add ., load_dotenv(), y cualquier open("archivo.csv").
 #
-# LEER LA PALABRA ANTES DEL %  antes de correr cualquier cosa.
+# LEER LA PALABRA ANTES DEL % antes de correr cualquier cosa.
 #
-# pwd            ruta completa
-# ls             qué hay acá
-# cat archivo    contenido REAL en disco (no el del editor sin guardar)
+#   pwd            ruta completa
+#   ls             qué hay acá
+#   cat archivo    contenido REAL en disco (no el del editor sin guardar)
+#   cd carpeta / cd .. / cd ~/ai-plan/semana-04      (~ = /Users/axelefron)
+#   cd + TAB       autocompleta
+#
+# cd es para CARPETAS. Un .py no es un comando: lo corre el intérprete.
+#   bitcoin.py 4          -> command not found
+#   python3 bitcoin.py 4  -> sí
+#
+# Nombres de archivo: sin espacios, sin mayúsculas, guion_bajo.
+# Y CON extensión .py — un archivo "pick_rows-py" corre pero no se importa
+# y VS Code no lo trata como Python.
 
 # ----------------------------------------------------------
-# 1.2 MOVERME
+# 1.2 % vs >>>  Y EL REPL
 # ----------------------------------------------------------
-# cd carpeta                  entro a una subcarpeta
-# cd ..                       subo un nivel
-# cd ~/ai-plan/semana-03      voy directo   (~ = /Users/axelefron)
-# cd car + TAB                autocompleta
+# %    = terminal (zsh): ls, cd, python3, git, pytest
+# >>>  = estoy DENTRO de Python. cd no existe acá. Salir: exit()
 #
-# cd es para CARPETAS, nunca para archivos.
-#   cd ~/.../coke.py   ->  "not a directory"
-# El archivo es el destino de python3, no de cd:
-#   cd ~/ai-plan/semana-03
-#   python3 bitcoin.py 2
-#
-# Un .py NO es un comando. "bitcoin.py 4" -> command not found.
-# Lo corre el intérprete: python3 bitcoin.py 4
-#
-# Nombres: sin espacios, sin mayúsculas. Uso guion_bajo.
-
-# ----------------------------------------------------------
-# 1.3 % vs >>>
-# ----------------------------------------------------------
-# %    = terminal (zsh). ls, cd, python3, check50, git, pytest
-# >>>  = estoy DENTRO de Python. Solo entiende Python. cd no existe acá.
-#        Salir: exit()
-#
-# Si abre en >>> solo, es el perfil "Python" de la terminal.
-# Quiero zsh: Terminal -> New Terminal (NO "With Profile").
-
-# ----------------------------------------------------------
-# 1.4 EL REPL — mi herramienta más subusada
-# ----------------------------------------------------------
-# python3          entro
-# exit()           salgo
-#
-# Sirve para VERIFICAR EN 30 SEGUNDOS en vez de adivinar:
+# EL REPL ES MI HERRAMIENTA MÁS SUBUSADA. Verifica en 30 segundos
+# en vez de adivinar:
 #   "1 + 1".split(" ")        ->  ['1', '+', '1']
 #   "CS50"[0:2]               ->  'CS'
-#   5 in [5, 10, 25]          ->  True
 #   f"{1234567.89:,.4f}"      ->  '1,234,567.8900'
 #   dir("")                   ->  TODOS los métodos de string
 #   help(random.randint)      ->  cómo se usa, qué devuelve
 #
 # LAS TRES PREGUNTAS DE UNA LIBRERÍA NUEVA:
-#   dir(libreria)     ¿qué tiene adentro?
-#   help(algo)        ¿cómo se usa?
-#   probarlo          ¿qué devuelve con datos reales?
-#   pypi.org          el modelo mental, para qué existe
+#   dir(lib)  ¿qué tiene?   help(x)  ¿cómo se usa?   probarlo  ¿qué devuelve?
 #
-# Adivinar nombres de métodos (.isnum, .isfloat, .add, figlet.random)
-# es lo que más tiempo me costó en todo el mes. El REPL lo mata al toque.
+# Adivinar nombres de métodos fue lo que más tiempo me costó el primer mes.
 
 # ----------------------------------------------------------
-# 1.5 MAC: python3 Y pip3
+# 1.3 MAC Y ATAJOS
 # ----------------------------------------------------------
-# python3 archivo.py      correr
-# pip3 install paquete    instalar
-# python / pip a secas    NO (apuntan al viejo del sistema)
-
-# ----------------------------------------------------------
-# 1.6 ATAJOS
-# ----------------------------------------------------------
+# python3 archivo.py   ·   pip3 install paquete   (nunca python/pip a secas)
+#
 # VS CODE
-#   ⌘+S              guardar        <- la bolita ● tiene que volverse X
-#   ⌘+Z / ⌘+⇧+Z      deshacer / rehacer
-#   ⌘+/              comentar selección   <- para aislar bugs
-#   ⌃+`              abrir terminal
-#   ⇧+Enter          correr solo la selección
+#   ⌘+S         guardar      <- la bolita ● tiene que volverse X
+#   ⌘+Z/⌘+⇧+Z   deshacer/rehacer
+#   ⌘+/         comentar selección   <- para aislar bugs
+#   ⌃+`         terminal
+#   ⌘+⇧+[       plegar el bloque donde estoy (para strings largos)
 #
 # TERMINAL
-#   ↑          comando anterior
-#   ⌃+U        borrar la línea actual
-#   ⌃+C        cancelar lo que corre o está colgado (loop infinito)
-#   ⌃+D        cerrar la entrada (EOFError) — NO es lo mismo que ⌃+C
-#   TAB        autocompletar
+#   ↑      comando anterior        ⌃+U   borrar la línea
+#   ⌃+C    cancelar/loop infinito  ⌃+D   cerrar la entrada (EOFError)
+#   TAB    autocompletar
 
 # ----------------------------------------------------------
-# 1.7 GIT — cerrar el día
+# 1.4 GIT
 # ----------------------------------------------------------
-# SIEMPRE desde la raíz del repo:
-#
 #   cd ~/ai-plan
-#   git status                <- LEER antes de add. Dice qué ve Git
-#                                y entre paréntesis qué comando usar.
-#   git add .                 <- "." = esta carpeta HACIA ABAJO
-#   git commit -m "dia N"
+#   git status      <- LEER antes de add. Dice qué ve Git y qué comando usar.
+#   git add .       <- "." = esta carpeta HACIA ABAJO
+#   git commit -m "dia N: lo que hice"
 #   git push
 #
-# Señal de terminado: desaparece el * de "main*" abajo a la izquierda,
-# y las M del Explorer. git status dice "working tree clean".
+# Terminado: desaparece el * de "main*" y las M del Explorer.
 #
-# QUÉ ES CADA COSA
-#   git add      pone en el staging area. NO guarda nada todavía.
-#   git commit   congela la foto. Devuelve un hash (ej: 2d3c367).
+#   git add      staging. NO guarda nada todavía.
+#   git commit   congela la foto. Devuelve un hash.
 #   git push     sube. El único que usa internet.
-#   git restore <ruta>   REEMPLAZA el archivo por la versión del
-#                        último commit. Recupera borrados y deshace cambios.
+#   git restore <ruta>   reemplaza el archivo por la versión del último
+#                        commit. Recupera borrados y deshace cambios.
 #
-# git restore NO es ⌘+Z. ⌘+Z deshace tecleo y depende del editor abierto.
-# git restore trae la versión commiteada, sin importar qué pasó después.
+# git restore NO es ⌘+Z. ⌘+Z deshace tecleo y depende del editor.
+# restore trae la versión commiteada pase lo que pase.
 # Por eso commiteo seguido AUNQUE ESTÉ ROTO: es mi botón de deshacer real.
 #
-# .gitignore (en la raíz, un patrón por línea, SIN espacios adelante):
+# .gitignore (en la raíz, un patrón por línea, sin espacios adelante):
 #   .env
 #   __pycache__/
 #   .DS_Store
 #   .venv/
 #
-# OJO: hay DOS .gitignore posibles. El mío está en la raíz de ai-plan.
-# El que Python crea adentro de .venv/ tiene un "*" y solo se ignora
-# a sí mismo. Mirar la barra de arriba del editor para saber cuál abrí.
-#
-# OJO 2: axelefron/ai-plan (mío, git push) y me50/axelefron (CS50, submit50)
-# son DOS REPOS DISTINTOS. Un push no entrega nada a CS50.
+# OJO 1: hay DOS .gitignore posibles. El mío está en la raíz de ai-plan.
+#        El de adentro de .venv/ solo se ignora a sí mismo.
+# OJO 2: axelefron/ai-plan (mío) y me50/axelefron (CS50) son DOS repos.
+#        Un push no entrega nada a CS50.
 
 # ----------------------------------------------------------
-# 1.8 INDENTACIÓN = ESTRUCTURA
+# 1.5 INDENTACIÓN = ESTRUCTURA
 # ----------------------------------------------------------
-# En Python la sangría no es estética: ES la lógica.
+# La sangría no es estética: ES la lógica.
+# Un else se aparea con el if de LA MISMA sangría. Indentado de más,
+# cuelga del if interno y cambia el programa sin dar error.
 #
-# Un else se aparea con el if que tiene LA MISMA sangría.
-# Si lo indento de más, cuelga del if interno y cambia todo el programa
-# sin dar ningún error.
-#
-# Lo mismo con loops anidados:
-#   for _ in range(10):        <- las 10 cuentas
+#   for _ in range(10):        <- las 10 vueltas
 #       x = ...                <- ADENTRO: valor nuevo cada vuelta
-#       correcto = False
-#       for _ in range(3):     <- los 3 intentos, anidado
+#       for _ in range(3):     <- anidado
 #           ...
 #       if correcto == False:  <- al nivel del for de 3: corre al terminarlo
-#           ...
 #   print(score)               <- sin indentar: al final de todo
 #
-# Cuando el programa "hace cualquier cosa" pero no tira error:
-# mirar las líneas verticales de VS Code antes que la lógica.
+# Cuando "hace cualquier cosa" pero no tira error: mirar las líneas
+# verticales de VS Code antes que la lógica.
+#
+# Un string de triple comilla SÍ se puede indentar por dentro
+# (son espacios en el texto, inofensivos). La línea del `=` no.
 
 # ----------------------------------------------------------
-# 1.9 ENTORNOS VIRTUALES (.venv)   [nuevo · semana 3]
+# 1.6 ENTORNOS VIRTUALES (.venv)
 # ----------------------------------------------------------
-# Un venv es un Python APARTE, con su propia lista de librerías,
-# separado del Python del sistema. Sirve para que cada proyecto tenga
-# lo suyo sin ensuciar la máquina.
+# Un Python APARTE con su propia lista de librerías.
 #
 #   source /Users/axelefron/ai-plan/.venv/bin/activate    activar
 #   deactivate                                            salir
 #
-# Lo reconozco por el (.venv) adelante del prompt:
-#   (.venv) axelefron@MacBook-Air-de-Axel-2 ai-plan %
+# Lo reconozco por el (.venv) adelante del prompt.
+# CON el venv, pip3 instala ADENTRO. SIN el venv, en el sistema.
+# Son dos listas distintas.
 #
-# CON EL VENV ACTIVO, pip3 instala ADENTRO del venv.
-# SIN el venv, instala en el sistema. Son dos listas distintas.
-#
-# ModuleNotFoundError: No module named 'dotenv'
-#   -> lo instalé en un Python y estoy corriendo con el otro.
-#      Instalar con el venv activo, correr con el venv activo.
+# ModuleNotFoundError: No module named 'X'
+#   -> lo instalé en un Python y corro con el otro.
 #
 # Qué va dónde:
-#   herramientas que uso en TODAS las carpetas (check50, submit50) -> global
-#   librerías de ESTE proyecto (requests, dotenv, pytest)          -> venv
+#   herramientas de TODAS las carpetas (check50, submit50)  -> global
+#   librerías de ESTE proyecto (requests, dotenv, anthropic) -> venv
 #
-# .venv/ va al .gitignore. Son miles de archivos que no son míos
-# y se regeneran solos.
+# .venv/ va al .gitignore: miles de archivos que no son míos.
 #
-# .env  y  .venv  son cosas DISTINTAS con nombre parecido:
-#   .env  = archivo de texto con mis secretos
-#   .venv = carpeta con el Python aislado
+# .env  = archivo de texto con mis secretos
+# .venv = carpeta con el Python aislado      (nombres parecidos, cosas distintas)
 
 # ----------------------------------------------------------
-# 1.10 SECRETOS — API KEYS      [nuevo · semana 3]
+# 1.7 SECRETOS — API KEYS
 # ----------------------------------------------------------
-# Una API key es una credencial: quien la tenga puede gastar en mi nombre.
-# Mi repo es PÚBLICO y hay bots que escanean GitHub buscando keys.
+# Una key es una credencial: quien la tenga gasta en mi nombre.
+# Mi repo es PÚBLICO y hay bots escaneando GitHub.
 #
 # EL PATRÓN, SIEMPRE:
 #   1. pip3 install python-dotenv       (con el venv activo)
-#   2. archivo .env, una línea, sin comillas ni espacios:
-#          COINCAP_API_KEY=abc123...
+#   2. UN SOLO .env en la raíz de ai-plan (no uno por semana).
+#      load_dotenv() lo encuentra subiendo por el árbol desde cualquier
+#      carpeta. Una línea por key, sin comillas ni espacios:
+#          ANTHROPIC_API_KEY=sk-ant-...
 #   3. .env listado en .gitignore
 #   4. en el código:
 #          from dotenv import load_dotenv
 #          import os
 #          load_dotenv()
-#          mi_key = os.getenv("COINCAP_API_KEY")
+#          mi_key = os.getenv("ANTHROPIC_API_KEY")
+#      (El SDK de Anthropic la lee del entorno solo: alcanza con
+#       load_dotenv() antes de crear el cliente.)
 #   5. ANTES de cualquier git add: git status NO debe mostrar .env
 #
-# Si getenv devuelve None -> el .env no se encontró (otra carpeta, o typo).
+# Si getenv devuelve None -> el .env no se encontró (carpeta o typo).
 #
-# SI ALGO ME OBLIGA A HARDCODEAR (check50 de bitcoin corre en el server
-# de CS50, donde no existe mi .env ni la librería dotenv):
+# SI ALGO ME OBLIGA A HARDCODEAR (check50 corre en el server de CS50,
+# sin mi .env):
 #   1. commitear primero la versión segura
-#   2. romper el archivo (pegar la key)
-#   3. check50 + submit50
-#   4. git restore <archivo>       <- este paso NO es opcional
-#   5. rotar la key en el proveedor (borrar la vieja, crear una nueva)
+#   2. romper el archivo    3. check50 + submit50
+#   4. git restore <archivo>        <- NO es opcional
+#   5. rotar la key en el proveedor
 #
-# Borrar una key filtrada del archivo NO alcanza: queda en el historial
-# de commits. Rotarla es lo que convierte el texto filtrado en basura.
+# Borrarla del archivo no alcanza: queda en el historial de commits.
+# Rotarla es lo que convierte el texto filtrado en basura.
 
 
-# ##########################################################
 # ##########################################################
 #  PARTE 2 · PYTHON — REFERENCIA
-# ##########################################################
 # ##########################################################
 
 # ----------------------------------------------------------
@@ -253,1018 +202,1033 @@
 # función -> el valor va ADENTRO:   len(texto)   abs(-10)   int("5")
 # método  -> va PEGADO con punto:   texto.strip()
 #
-# Los métodos son DE UN TIPO: los de texto solo andan en texto.
-# La mayoría NO modifica el original: DEVUELVEN algo nuevo.
-#   texto.strip()          calcula y tira el resultado
+# Los métodos son DE UN TIPO. La mayoría NO modifica el original:
+# DEVUELVEN algo nuevo.
+#   texto.strip()          calcula y tira
 #   texto = texto.strip()  lo guarda
 #
-# LA EXCEPCIÓN QUE ME MORDIÓ: los métodos de LISTA modifican en el lugar
-# y devuelven None.
-#   x = lista.append(algo)   -> x vale None, no la lista
+# LA EXCEPCIÓN: los métodos de LISTA modifican en el lugar y devuelven None.
+#   x = lista.append(algo)   -> x vale None
 #   lista.append(algo)       -> así, sin asignar
 #
 # Encadenar: cada método opera sobre el resultado del anterior.
-#   texto.strip().lower().replace(" ", "-")
 # EL ORDEN IMPORTA: strip ANTES que replace.
-#
-# Los corchetes se encadenan igual:
-#   dic["data"]["priceUsd"]   -> primero abro "data", a ESO le pido "priceUsd"
+# Los corchetes se encadenan igual: dic["data"]["priceUsd"]
 
 # ----------------------------------------------------------
 # 2.2 TIPOS Y CONVERSIÓN
 # ----------------------------------------------------------
-# input() SIEMPRE devuelve str, aunque escriban un número.
-# "42" y 42 son cosas distintas. Nunca son iguales.
+# input() SIEMPRE devuelve str. "42" y 42 nunca son iguales.
 #
-# int(x)    a entero    int("42") -> 42       (int("2.5") explota)
-# float(x)  a decimal   float("2.5") -> 2.5
-# str(x)    a texto     str(42) -> "42"
-# type(x)   qué tipo es. Para debuggear.
-# abs(x)    valor absoluto. abs(-10) -> 10   (función suelta, no método)
-# len(x)    cuántos caracteres/elementos
-# round(x, n)  redondea para CALCULAR (para mostrar uso f-string)
+#   int(x) float(x) str(x) type(x) abs(x) len(x) round(x, n)
 #
-# LO QUE LLEGA DE AFUERA CASI SIEMPRE ES TEXTO, aunque parezca número:
-#   input()                    -> str
-#   sys.argv[1]                -> str
-#   un valor de un JSON        -> puede ser str ("323186.4")
-#   "123" * 2 -> "123123"      (repite, no multiplica)
+# LO QUE LLEGA DE AFUERA CASI SIEMPRE ES TEXTO:
+#   input()  ·  sys.argv[1]  ·  un valor de un JSON (puede ser "323186.4")
+#   "123" * 2 -> "123123"   (repite, no multiplica)
 #
 # CONVERTIR UNO POR UNO, no la colección entera:
-#   float("7:21")              explota
-#   float(["1","+","1"])       explota (es una lista)
-#   float(sys.argv)            explota (es la lista entera)
-#   float(sys.argv[1])         sí
+#   float(sys.argv)     explota (es la lista)
+#   float(sys.argv[1])  sí
 
 # ----------------------------------------------------------
 # 2.3 STRINGS — MÉTODOS
 # ----------------------------------------------------------
 # NORMALIZAR (antes de comparar)
-#   .strip()        saca espacios de los EXTREMOS (no los del medio)
-#   .lower()        todo minúscula
-#   .upper()        todo MAYÚSCULA
-#   .casefold()     como lower pero más agresivo
-#   .title()        Primera Letra De Cada Palabra
-#   .capitalize()   Solo la primera letra de todo
+#   .strip()  extremos (NO el medio)   .lower()  .upper()
+#   .casefold()  como lower pero más agresivo
+#   .title()  Cada Palabra     .capitalize()  Solo la primera
+#   OJO: .title() CAMBIA el original. Si hay que conservar el caso, rompe.
 #
-# OJO con .title(): CAMBIA las mayúsculas del original.
-# Si el enunciado pide conservar el caso tal cual, .title() lo rompe.
+# PREGUNTAR (devuelven True/False — van DIRECTO en el if, sin "== True")
+#   .isalpha() .isdigit() .isalnum() .isupper() .islower()
+#   .startswith("h")  .endswith(".py")
 #
-# PREGUNTAR (devuelven True / False — se usan DIRECTO en el if,
-#            no hace falta "== True")
-#   .isalpha()          ¿son todas letras?
-#   .isdigit()          ¿son todos dígitos?
-#   .isalnum()          ¿letras o números, sin símbolos ni espacios?
-#   .isupper()          ¿está todo en mayúscula?
-#   .islower()          ¿está todo en minúscula?
-#   .startswith("h")    ¿empieza con eso?
-#   .endswith(".py")    ¿termina con eso?
-#
-# NO EXISTE .isfloat(). Me lo inventé dos veces.
-# "¿esto se puede convertir a número?" NO se pregunta con un if:
-# se INTENTA la conversión adentro de un try y se ve si explota.
+#   NO EXISTE .isfloat(). "¿esto se puede convertir?" NO se pregunta
+#   con un if: se INTENTA adentro de un try.
 #
 # TRANSFORMAR
-#   .replace(viejo, nuevo)   cambia TODAS las apariciones
-#   .count("a")              cuántas veces aparece
-#   .split(sep)              parte el texto y devuelve una LISTA
-#   " ".join(lista)          une una lista en un texto
+#   .replace(viejo, nuevo)   .count("a")
+#   .split(sep)     parte y devuelve una LISTA
+#   " ".join(lista) une — es método del SEPARADOR, no de la lista
 #
-# .split() RECIBE UN SOLO SEPARADOR.
-#   El segundo argumento es un NÚMERO (cuántos cortes), no otro separador.
-#   Para partir por dos cosas: dos pasos.
+#   .split() recibe UN separador. El segundo argumento es un NÚMERO
+#   (cuántos cortes). Para partir por dos cosas: dos pasos.
+#   Y si el separador deja espacios pegados, incluirlos en el separador:
+#   "Bell, Katie".split(", ")  mejor que .split(",") + .strip()
 
 # ----------------------------------------------------------
-# 2.4 STRINGS — POSICIONES Y PEDAZOS
+# 2.4 POSICIONES Y RANGOS — LA DERECHA SE EXCLUYE
 # ----------------------------------------------------------
-#   s[0]      primer carácter        (empieza en CERO)
-#   s[-1]     último
-#   s[0:2]    desde 0 HASTA 2 SIN INCLUIR el 2  -> los dos primeros
+#   s[0]   primero (empieza en CERO)   s[-1]  último
+#   s[0:2] desde 0 HASTA 2 SIN INCLUIRLO -> los dos primeros
 #
-# EL NÚMERO DE LA DERECHA SE EXCLUYE. Siempre.
-#   "CS50"[0:1]  ->  "C"     (una sola letra)
-#   "CS50"[0:2]  ->  "CS"    (dos letras)
+# LA MISMA REGLA EN TODOS LADOS:
+#   range(3)                -> 0,1,2        (tres vueltas)
+#   range(1, 3)             -> 1,2          (DOS vueltas)
+#   random.randrange(1, 11) -> 1 a 10
+#   random.randint(1, 10)   -> 1 a 10       (este SÍ incluye los dos)
+#   lista[0:3]              -> los 3 primeros
 #
-# La misma regla en OTROS LADOS:
-#   range(3)                  -> 0, 1, 2      (tres vueltas)
-#   range(1, 3)               -> 1, 2         (DOS vueltas, no tres)
-#   random.randrange(1, 11)   -> 1 a 10       (el 11 nunca sale)
-#   random.randint(1, 10)     -> 1 a 10       (este SÍ incluye los dos)
-#   lista[0:3]                -> los 3 primeros
-#
-# Cuando quiero incluir el tope: randint, o randrange(1, tope + 1).
+# Para incluir el tope: randint, o randrange(1, tope + 1).
 
 # ----------------------------------------------------------
-# 2.5 F-STRINGS (mostrar)
+# 2.5 F-STRINGS
 # ----------------------------------------------------------
 #   f"Total: {percent:,.4f}%"
-#    │       │       │     │
 #    │       │       │     └─ afuera de {} = texto literal
 #    │       │       └─────── ADENTRO: dos puntos + formato
-#    │       └─────────────── adentro: la expresión a mostrar
+#    │       └─────────────── la expresión (puede ser una llamada)
 #    └─────────────────────── la f que activa las llaves
 #
 # REGLA: adentro de {} se calcula, afuera se imprime tal cual.
-# Adentro puede ir cualquier expresión, incluso una llamada a función:
-#   f"Output: {shorten(word)}"      f"${value(greeting)}"
 #
-# FORMATOS, todos después de ":" y adentro de las llaves:
-#   .1f    1 decimal
-#   .2f    2 decimales (plata)
-#   ,      separador de miles
-#   ,.4f   las dos cosas: miles Y 4 decimales   -> 323,186.4000
+# FORMATOS (todos después de ":")
+#   .1f .2f      decimales          .6f   para números muy chicos
+#   ,            miles              ,.4f  las dos: 323,186.4000
+#   .0%          0.47 -> "47%"      :10   rellena a 10 chars (alinea columnas)
 #
-# \n dentro de un string = salto de línea.
-#   Sirve cuando el cursor quedó pegado al prompt de un input()
-#   que nunca recibió Enter (caso Ctrl-D): f"\nAdieu, adieu, a..."
+# \n = salto de línea. Sirve cuando el cursor quedó pegado al prompt de
+# un input() que nunca recibió Enter (Ctrl-D): f"\nAdieu, adieu, a..."
 #
-# El formato va donde el valor TODAVÍA ES NÚMERO.
+# LAS LLAVES SOLO SIGNIFICAN "INSERTÁ ACÁ" ADENTRO DE UNA f-STRING:
+#   print(f"{x}")   -> el valor de x
+#   print({x})      -> un SET con x adentro -> imprime {20}
 #
-# LOS FLOATS MIENTEN:
-#   0.07 * 100  ->  7.000000000000001
-# El error aparece SOLO CON ALGUNOS NÚMEROS -> probar con un caso no alcanza.
+# Adentro de una f-string con comillas dobles, las claves de un dict
+# van con comillas SIMPLES:  f"{m['field']}"
+#
+# LOS FLOATS MIENTEN: 0.07 * 100 -> 7.000000000000001
+# Y solo con algunos números -> probar con un caso no alcanza.
 # REGLA: todo número calculado que se MUESTRA, va formateado.
 
 # ----------------------------------------------------------
 # 2.6 print()
 # ----------------------------------------------------------
-# print(a, b)             separa con un espacio
-# print(a, b, sep="_")    el sep va ENTRE los argumentos
-# print("x", end="")      no salta de línea al final
-# print()                 imprime una línea vacía
+#   print(a, b)          separa con espacio
+#   print(a, b, sep="_") el sep va ENTRE los argumentos
+#   print("x", end="")   no salta de línea
+#   print()              línea vacía
 #
-# print() NO DEVUELVE NADA (devuelve None).
-#   print(x.lower())   sí
-#   print(x).lower()   no  -> AttributeError: 'NoneType'
+# print() NO DEVUELVE NADA.
+#   print(x).lower()  ->  AttributeError: 'NoneType'
 #
-# print(input(...)) imprime lo que el usuario escribió y lo tira.
-# Si quiero usar la respuesta, la GUARDO en una variable.
+# print(input(...)) imprime y tira. Si quiero la respuesta, la GUARDO.
 #
-# f-string innecesario: print(f"{value(x)}") == print(value(x))
+# UNA EXPRESIÓN SOLA NO IMPRIME NADA en un .py.
+#   message.content[0].text        <- calcula y tira
+#   print(message.content[0].text) <- sí
+# En un notebook o en el REPL la última línea se muestra sola. Eso es
+# una comodidad de esa herramienta, no de Python.
 
 # ----------------------------------------------------------
 # 2.7 FUNCIONES
 # ----------------------------------------------------------
 # def NO EJECUTA NADA. Define. Nada corre hasta que alguien llama.
 #
-#   def convert(time):
-#       ^       ^
-#       nombre  parámetro = etiqueta del casillero vacío
+# El parámetro recibe su valor EN LA LLAMADA. Adentro trabajo con el
+# PARÁMETRO, nunca con el nombre de la función ni con variables de otra.
 #
-# El parámetro recibe su valor EN LA LLAMADA.
-# Adentro trabajo con el PARÁMETRO, nunca con el nombre de la función
-# ni con variables de otra función.
+# SI LA FUNCIÓN RECIBE UN DATO, NO LE PIDO input() ADENTRO.
+# Pisa el parámetro y cuelga los tests (el test no tipea nada).
 #
-# SI LA FUNCIÓN RECIBE UN DATO, NO LE PIDA INPUT ADENTRO.
-# Un input() adentro PISA lo que le mandaron, y además cuelga los tests
-# (el test no tipea nada: la función se queda esperando para siempre).
-# Me pasó en tip, interpreter, meal, generate_integer, shorten.
-#
-# LLAMAR ES UNA CALCULADORA — necesita las tres partes:
-#   resultado  =  convert( lo_que_le_paso )
-#      ↑            ↑            ↑
-#   guardo       la llamo    le doy el dato
+# LLAMAR ES UNA CALCULADORA:
+#   resultado = convert(dato)
+#      ↑          ↑       ↑
+#   guardo     la llamo  le doy el dato
 # Sin el "resultado =" el valor se pierde.
 #
-# Y NO LLAMAR DOS VECES A LA MISMA FUNCIÓN por descuido:
-#   shorten(word)                    <- calcula y tira
-#   print(f"Output: {shorten(word)}")<- vuelve a calcular
-# La primera línea sobra.
+# EL "=" SE LEE DE DERECHA A IZQUIERDA. El nombre NUEVO va a la izquierda.
+#   convert(dato) = nombre   -> SyntaxError: cannot assign to function call
 #
-# EL "=" SE LEE DE DERECHA A IZQUIERDA:
-#   El nombre NUEVO va SIEMPRE a la izquierda.
-#   nombre = convert(dato)      sí
-#   convert(dato) = nombre      SyntaxError: cannot assign to function call
+# return TERMINA LA FUNCIÓN EN EL ACTO. Nunca adentro de un loop que
+# quiero que dé todas las vueltas. No lleva paréntesis.
 #
-# return TERMINA LA FUNCIÓN EN EL ACTO.
-#   Las líneas que siguen no corren.
-#   NUNCA adentro de un loop que quiero que dé todas las vueltas.
-#   return no es una función: return x, sin paréntesis.
+# Para salir de un while de validación DENTRO de una función: return,
+# no break. return sale del loop Y de la función, entregando el valor.
 #
-# DENTRO DE UNA FUNCIÓN, PARA SALIR DE UN WHILE DE VALIDACIÓN, VA return,
-# NO break. return sale del loop Y de la función, entregando el valor.
+# return -> devuelve el valor a quien llamó (para el programa)
+# print  -> muestra en pantalla (para el usuario)
+# Una función que imprime es una caja negra: NO SE PUEDE TESTEAR.
 #
-# return vs print
-#   return -> devuelve el valor a quien llamó (para el programa)
-#   print  -> muestra en pantalla (para el usuario)
-#   Una función que imprime es una caja negra: NO SE PUEDE TESTEAR.
+# PARÁMETROS OPCIONALES — el patrón params + if:
+#   Cuando la API no acepta None, no alcanza con poner el parámetro
+#   en la firma: hay que decidir si la clave ENTRA al diccionario.
 #
-# SCOPE: cada función solo conoce sus propios parámetros y lo que crea.
-#   Un contador creado en main() no se puede sumar desde otra función.
-#   El contador vive donde vive el loop que lo hace crecer.
+#     def chat(messages, system=None, stop_sequences=None):
+#         params = {                    <- SOLO lo obligatorio
+#             "model": model,
+#             "max_tokens": 8000,
+#             "messages": messages,
+#         }
+#         if system:
+#             params["system"] = system
+#         if stop_sequences:
+#             params["stop_sequences"] = stop_sequences
+#         return client.messages.create(**params)
+#
+#   ** desarma el diccionario en argumentos con nombre:
+#   {"model": x, "max_tokens": y}  ->  model=x, max_tokens=y
+#
+#   CLAVE: las opcionales NO van en el dict inicial. Si están ahí,
+#   el if no agrega nada y se manda None igual.
+#
+# VALOR POR DEFECTO MUTABLE — no usar:
+#   def f(lista=[]):     <- el default se crea UNA vez, se comparte
+#   def f(lista=None):   <- así, y se decide adentro
+#
+# SCOPE: cada función solo conoce sus parámetros y lo que crea.
+# Un contador creado en main() no se suma desde otra función.
 
 # ----------------------------------------------------------
-# 2.8 EL PATRÓN main() + auxiliares
+# 2.8 LA FUNCIÓN TESTEABLE — main() + auxiliares
 # ----------------------------------------------------------
 #   funcion_logica  recibe, transforma, RETURN. No pide, no imprime.
 #   main()          pide input, la llama, IMPRIME.
 #
-# Cada función UN trabajo. Si están cruzadas, no funciona.
-#   convert   ENTRA "7:21" (string)  ->  SALE 7.35 (número)
-#   main      no recibe nada         ->  no devuelve nada, imprime
+# Para poder MEDIR algo, ese algo tiene que DEVOLVER un valor.
 #
 # LA PRESENTACIÓN VA EN main(), NO EN LA FUNCIÓN:
 #   shorten devuelve "Twttr", NO "Output: Twttr"
 #   value devuelve 0, NO "$0"
-#   El "Output: " y el "$" los pone el print.
-#   Si la función devuelve texto decorado, el test nunca va a matchear.
+#   Si la función devuelve texto decorado, el test nunca matchea.
 #
-# ¿DÓNDE VA LA NORMALIZACIÓN (.strip().casefold())?
-#   ADENTRO de la función, no en main().
+# LA NORMALIZACIÓN (.strip().casefold()) VA ADENTRO DE LA FUNCIÓN.
 #   Si está en main(), la función solo anda cuando la llaman "bien
-#   preparada". El test le manda "Hello customer" crudo y falla.
-#   Una función que se va a testear se hace cargo de su propio input.
+#   preparada". El test le manda el dato crudo y falla.
+#   Una función testeable se hace cargo de su propio input.
+#
+# Este patrón es el mismo que necesité para medir el clasificador:
+# la parte que decide devuelve un dato, otra capa lo muestra.
 
 # ----------------------------------------------------------
 # 2.9 if __name__ == "__main__":
 # ----------------------------------------------------------
 #   if __name__ == "__main__":
-#       main()
+#       <los tests, o main()>
 #
-# Un .py se puede EJECUTAR (python3 archivo.py) o IMPORTAR
-# (otro archivo quiere usar mis funciones).
-# Al importar, Python corre todo lo del nivel de afuera — incluido
-# un main() suelto. Eso ROMPE los tests: al hacer "from twttr import
-# shorten", el programa entero arrancaría y pediría input.
+# Separa lo que un archivo OFRECE (funciones) de lo que HACE al ejecutarlo.
+#   python3 classifier.py            -> corre lo del if
+#   from classifier import classify  -> define todo, NO corre el if
 #
-# La guarda hace que main() corra SOLO al ejecutar directo.
-# Desde meal.py en adelante, todos los ejercicios la llevan.
+# Python le pone a cada archivo una variable __name__: vale "__main__"
+# al ejecutarlo directo, y el nombre del módulo al importarlo.
+#
+# IMPORTAR UN ARCHIVO LO EJECUTA ENTERO, de arriba a abajo. Sin esta
+# guarda, cada import dispara las llamadas a la API que el archivo tenga
+# sueltas. Se paga en tokens.
 
 # ----------------------------------------------------------
 # 2.10 DECIDIR Y COMPARAR
 # ----------------------------------------------------------
-# ==  igual     !=  distinto     <  >  <=  >=
-# and   or   not
+# ==  !=  <  >  <=  >=   ·   and  or  not
 #
 # LOS TRES QUE SE CONFUNDEN:
-#   is / is not    ¿son EL MISMO OBJETO?   casi nunca es lo que quiero
+#   is / is not    ¿son EL MISMO OBJETO?  casi nunca es lo que quiero
 #   == / !=        ¿valen LO MISMO?
-#   in / not in    ¿está CONTENIDO en?     membresía
+#   in / not in    ¿está CONTENIDO en?
 #
-#   letra not in "aeiou"     sí, es membresía
-#   letra is not "aeiou"     SIEMPRE True. No compara lo que creo.
+#   letra not in "aeiou"   sí      letra is not "aeiou"   SIEMPRE True
 #
-# in funciona sobre string, lista y diccionario (en el dict busca CLAVES).
-#   if level in [1, 2, 3]:    mejor que dos comparaciones con > y <=
+# in funciona sobre string, lista y dict (en el dict busca CLAVES).
+#   if level in [1, 2, 3]:    mejor que dos comparaciones
 #
-# CADA LADO DEL or / and TIENE QUE SER UNA COMPARACIÓN COMPLETA:
-#   if x == 5 or x == 10 or x == 25:     sí
-#   if x == 5 or 10 or 25:               MAL — siempre True, no avisa
-#   if x in [5, 10, 25]:                 mejor que todo lo anterior
+# CADA LADO DEL or/and TIENE QUE SER UNA COMPARACIÓN COMPLETA:
+#   if x == 5 or x == 10:    sí
+#   if x == 5 or 10:         MAL — siempre True, no avisa
+#   if x in [5, 10, 25]:     mejor
 #
 # NO COMPARAR CONTRA UN TIPO NI CONTRA UNA CLASE DE ERROR:
-#   shorten("word") != int        siempre True. No prueba nada.
-#   value(x) == TypeError         no es así como se verifica un error.
-#   Para verificar que algo LANZA un error: with pytest.raises(TypeError):
+#   shorten("w") != int       siempre True, no prueba nada
+#   elif FileNotFoundError:   siempre True
+#   El nombre de un error va después de except, o en pytest.raises.
+#   No se PREGUNTA si algo va a fallar: se intenta.
 #
-# COMPARACIÓN ENCADENADA:
-#   7 <= t <= 8   ->  (7 <= t) y (t <= 8)     "entre 7 y 8"
-#   Los dos signos tienen que apuntar para el mismo lado.
+# ENCADENADA: 7 <= t <= 8   ("entre 7 y 8", los dos signos igual)
 #
-# if / elif / else
-#   Se DETIENE en la primera condición verdadera.
-#   -> ordenar de lo MÁS ESPECÍFICO a lo más general.
-#      startswith("hello") ANTES que startswith("h"), o "hello" nunca
-#      llega a su rama.
-#   Con ifs sueltos, Python evalúa todos. Si son excluyentes, elif.
+# if/elif/else SE DETIENE en la primera verdadera.
+#   -> ordenar de lo MÁS ESPECÍFICO a lo general.
+#      startswith("hello") ANTES que startswith("h").
+#   Con ifs sueltos Python evalúa todos. Si son excluyentes, elif.
 
 # ----------------------------------------------------------
 # 2.11 LOOPS
 # ----------------------------------------------------------
-# for    recorrer algo que YA TENGO, o repetir un número CONOCIDO de veces
+# for    recorrer algo que YA TENGO, o repetir N veces conocidas
 # while  repetir MIENTRAS una condición sea verdadera
-#        (no sé de antemano cuántas vueltas van a ser)
 #
-#   for c in s:              cada carácter
-#   for _ in range(3):       3 vueltas, no me importa el número
-#   for i in range(len(lista)):   cuando necesito el índice
+#   for c in s:                     cada carácter
+#   for _ in range(3):              3 vueltas, no me importa el número
+#   for i, x in enumerate(l, start=1):   índice Y elemento juntos
 #
-# EL NOMBRE DESPUÉS DEL for ES DEL LOOP. Python le mete el valor de cada
-# vuelta encima. Si uso ahí una variable que ya tenía, la pierdo:
-#   for result in range(3):   <- pisa mi variable result
-#   for _ in range(3):        <- así
+# EL NOMBRE DESPUÉS DEL for ES DEL LOOP. Si uso una variable que ya
+# tenía, la pierdo:  for result in range(3):  <- pisa mi variable
 #
 # WHILE — LA REGLA DE ORO
 #   1. La variable de la condición nace ANTES del loop.
-#   2. Adentro del loop, algo LA MODIFICA.
+#   2. Adentro, algo LA MODIFICA.
 #   3. Si no, es infinito. Se corta con ⌃+C.
-#
 #   Corolario: si lo que se repite es PREGUNTAR, el input() va ADENTRO.
-#   Un input arriba del while = loop infinito garantizado.
 #
-# DOS FASES = DOS LOOPS, no uno.
-#   Si un programa pide una cosa y después otra en ciclo (level, y después
-#   guesses), son dos while separados uno abajo del otro. Meterlos en el
-#   mismo loop hace que vuelva a preguntar lo primero cada vuelta.
+# DOS FASES = DOS LOOPS, uno abajo del otro. Meterlos en el mismo hace
+# que vuelva a preguntar lo primero cada vuelta.
 #
 # LAS TRES PALABRAS QUE SE CONFUNDEN:
-#   pass      "acá no hago nada"  -> y SIGUE con la línea de abajo
-#   continue  "abandono esta vuelta" -> salta al principio del loop
-#   break     "abandono el loop entero"
+#   pass      "acá no hago nada"       -> SIGUE con la línea de abajo
+#   continue  "abandono esta vuelta"   -> salta al principio del loop
+#   break     "abandono el loop"
 #
-#   Un pass donde va un continue deja que el código siga bajando
-#   y ejecute lo que yo quería saltear. Es un bug silencioso.
+#   Un pass donde va un continue deja que el código siga bajando y
+#   ejecute lo que yo quería saltear. Bug silencioso.
+#   En un while True, volver arriba es NO hacer nada: no hay que escribirlo.
 #
-#   En un while True, si no hay return ni break, el loop vuelve arriba
-#   SOLO. No hace falta escribir nada para "volver a preguntar".
-#
-# += y -=   incrementar / decrementar. Con números suma, con strings pega.
+# += 1  es  = x + 1   (con strings pega, con listas extiende)
 
 # ----------------------------------------------------------
 # 2.12 LISTAS
 # ----------------------------------------------------------
-# lista = ["Luru", "Kike", "Botto"]
+#   lista[0]  ·  lista[0:3]  ·  len(lista)  ·  x in lista
 #
-#   lista[0]        primer elemento
-#   lista[0:3]      un pedazo (la derecha se excluye)
-#   len(lista)      cuántos
-#   x in lista      ¿está?
-#   lista.append(x) agrega al final — MODIFICA la lista, devuelve None
+#   lista.append(x)   agrega EL OBJETO. Modifica, devuelve None.
+#   lista.extend(l2)  recorre l2 y agrega CADA COSA de adentro.
 #
-# " ".join(lista)   une los elementos con ese separador.
-#   join es método del SEPARADOR, no de la lista.
-#   lista.join(...)  ->  AttributeError: 'list' object has no attribute 'join'
+#   batch = ["a","b","c"]
+#     .append(batch) -> [["a","b","c"]]   1 elemento
+#     .extend(batch) -> ["a","b","c"]     3 elementos
+#   Acumulando 10 llamadas de 20 items: append da len 10, extend da 200.
 #
-# print(lista)        imprime la lista entera con corchetes y comillas
-# for x in lista:     imprime uno por línea
+#   " ".join(lista)   une — método del SEPARADOR, no de la lista
+#   sorted(l)         copia ordenada (no modifica). sorted(l, reverse=True)
+#
+# LIST COMPREHENSION — un for compacto:
+#   todos = [row["text"] for row in reader]
+#   equivale a crear la lista vacía y hacer append en un for.
+#   Las dos están bien; el for normal es más fácil de depurar.
+#
+# print(lista) imprime con corchetes y comillas. for x in lista: uno por línea.
 
 # ----------------------------------------------------------
 # 2.13 DICCIONARIOS
 # ----------------------------------------------------------
-# Guardan pares CLAVE : VALOR. Se buscan por clave, no por posición.
+# Pares CLAVE : VALOR. Se buscan por clave, no por posición.
 #
-#   fruits = {"Apple": 130, "Banana": 110}
+#   fruits["Apple"]     -> 130      CORCHETES, no paréntesis
+#   fruits("Apple")     -> TypeError: not callable
+#   fruits["Mango"]     -> KeyError (explota)
+#   "Apple" in fruits   -> True     (pregunta por CLAVES)
+#   fruits.get("Mango") -> None     (no explota)
+#   dic["clave"] = x    -> agrega o pisa. Así agrego una clave nueva
+#                          a un dict que ya existe.
 #
-#   fruits["Apple"]        -> 130      CORCHETES, no paréntesis
-#   fruits("Apple")        -> TypeError: 'dict' object is not callable
-#   fruits["Mango"]        -> KeyError (la clave no existe: explota)
-#   "Apple" in fruits      -> True     (pregunta por CLAVES)
-#   fruits.get("Mango")    -> None     (no explota)
+# ANIDADOS (lo que devuelve una API):
+#   respuesta["data"]["priceUsd"]
+#   Cada corchete se cierra antes de abrir el siguiente. Si me quedo
+#   un nivel corto, obtengo el dict de adentro.
+#   -> print() del diccionario ENTERO antes de escribir la navegación.
 #
-# LAS CLAVES NO SE REPITEN. El valor nuevo pisa al viejo.
-#
-# DICCIONARIOS ANIDADOS (lo que devuelve una API):
-#   respuesta = {"data": {"id": "bitcoin", "priceUsd": "323186.4"}}
-#   respuesta["data"]["priceUsd"]   -> "323186.4"
-#
-#   Cada corchete se cierra antes de abrir el siguiente.
-#   Si me quedo un nivel corto, obtengo el dict de adentro, no el valor.
-#   -> print() del diccionario entero ANTES de escribir la navegación.
-#
-# Recorrerlo da las CLAVES:
-#   for nombre in fruits:
-#       print(nombre, fruits[nombre])
-#
-# Si quiero UN valor de UN diccionario, NO va ningún for. El for es para
-# recorrer varios.
-#
-# LISTA DE DICCIONARIOS — cuando cada item tiene VARIOS atributos:
-#   amigos = [{"name": "Luru", "casa": "Lapis"}, ...]
-#   for amigo in amigos:
-#       print(amigo["name"])
+# LISTA DE DICCIONARIOS — cada item con varios atributos:
+#   for amigo in amigos: print(amigo["name"])
 #   Es un dataframe. El dict plano es un VLOOKUP.
+#
+# DICCIONARIO COMO ÍNDICE — para cruzar dos colecciones:
+#   Mal: por cada fila de A, recorrer todo B buscando la que coincide.
+#        20x20 = 400 comparaciones. 200x200 = 40.000.
+#   Bien: recorrer B UNA vez y armar clave -> fila.
+#
+#     indice = {}
+#     for row in reader:
+#         indice[row["text"]] = row
+#     ...
+#     fila_b = indice[texto]        <- búsqueda directa
+#
+#   Es el índice de un libro. Reconocer la situación: "voy a buscar
+#   muchas veces por una clave" -> armá un dict.
+#
+#   Y SIEMPRE con guarda, porque la clave puede no estar:
+#     if clave not in indice:
+#         print(f"NOT FOUND: {clave[:60]}")
+#         continue
+#
+# Una TUPLA (a, b) puede ser clave de un diccionario porque es inmutable.
+# Una lista no.
 #
 # None = "no hay valor". No es 0 ni "" ni False.
 
 # ----------------------------------------------------------
 # 2.14 TRY / EXCEPT
 # ----------------------------------------------------------
-#   try:
-#       <lo que puede romperse>
-#   except <TipoDeError>:
-#       <qué hacer con ESE error>
-#   else:
-#       <corre SOLO si no hubo ninguna excepción>
+#   try:     <lo que puede romperse>
+#   except <TipoDeError>:    <qué hacer con ESE error>
+#   else:    <corre SOLO si no hubo excepción>
 #
-# EL try PROTEGE SOLO LAS LÍNEAS INDENTADAS ADENTRO.
-# Si la línea que puede romper quedó afuera, el except no se entera
-# y el programa revienta igual. Me pasó dos veces (game, get_level).
+# EL try PROTEGE SOLO LAS LÍNEAS INDENTADAS ADENTRO. Si la línea que
+# puede romper quedó afuera, el programa revienta igual.
+# Y envolver de más hace que atrape cosas que quería manejar distinto.
 #
-# El try envuelve SOLO lo que puede fallar. Envolver de más hace que
-# el except atrape cosas que yo quería manejar de otra forma.
-#
-# VARIOS ERRORES EN UN MISMO except: un solo paréntesis, coma en el medio.
-#   except (ValueError, IndexError):        sí
-#   except (ValueError) (IndexError):       SyntaxError
+# VARIOS ERRORES EN UN except: un solo paréntesis, coma en el medio.
+#   except (ValueError, IndexError):     sí
+#   except (ValueError) (IndexError):    SyntaxError
 #
 # VARIOS except, UNO POR ERROR, cada uno con SU reacción:
-#   except KeyError:
-#       pass        <- item inválido: ignorar y volver a preguntar
-#   except EOFError:
-#       break       <- Ctrl-D: salir del loop
+#   except KeyError:   pass     <- item inválido: ignorar
+#   except EOFError:   break    <- Ctrl-D: salir
 #
-# Python usa el PRIMER except que coincida.
-# Meter todos los errores en un solo except les da a todos la misma
-# reacción. Ese fue mi bug en taqueria.
+# Python usa el PRIMER except que coincida. Meter todo en uno solo les
+# da a todos la misma reacción.
 #
-# UN except QUE HACE pass SOBRE UN ERROR REAL ME ESCONDE LA CAUSA.
-#   Si el requests.get falla y hago pass, después explota en otro lado
-#   con NameError y el traceback apunta a la línea equivocada.
-#   Para errores que no puedo manejar: sys.exit("mensaje").
+# UN except QUE HACE pass SOBRE UN ERROR REAL ESCONDE LA CAUSA: después
+# explota en otro lado y el traceback apunta a la línea equivocada.
+# Para lo que no puedo manejar: sys.exit("mensaje").
 #
-# NO listar errores que no pueden pasar. Un except requests.RequestException
-# alrededor de código que no toca la red no se activa nunca.
+# except Exception as e:  atrapa cualquier cosa y e dice cuál fue.
+#   Ancho de más para producción, pero correcto en un loop largo donde
+#   lo que importa es NO FRENAR:
+#     except Exception as e:
+#         print(f"Row {i} failed: {e}")
+#         continue
 
 # ----------------------------------------------------------
-# 2.15 try/except  vs  if       (la distinción que importa)
+# 2.15 try/except vs if
 # ----------------------------------------------------------
 # try/except  atrapa lo que ROMPE.
-#     "cat"      -> ValueError al convertir
-#     sys.argv[1] sin argumento -> IndexError
-#     "3/0"      -> ZeroDivisionError
-#
+#     "cat" -> ValueError   ·   sys.argv[1] faltante -> IndexError
 # if          maneja lo que ANDA PERO NO SIRVE.
-#     "4/3"  -> 1.33 es un número válido, pero el enunciado lo rechaza.
-#     "-5"   -> es un número perfecto, pero un guess negativo no vale.
-#     len(sys.argv) < 2  -> se cuenta ANTES de intentar leer el índice.
+#     "4/3" es un número válido pero el enunciado lo rechaza
+#     "-5" es perfecto pero un guess negativo no vale
+#     len(sys.argv) < 2 se cuenta ANTES de leer el índice
 #
 # AL VALIDAR UN RANGO, MIRAR LOS DOS EXTREMOS.
-# El caso raro que no se me ocurre probar es el que rompe el check50.
 
 # ----------------------------------------------------------
-# 2.16 ERRORES COMO SEÑAL, NO COMO FALLA
+# 2.16 ERRORES COMO SEÑAL
 # ----------------------------------------------------------
-# EOFError = Ctrl-D = "no hay más entrada".
-# No es un error del usuario: es cómo se avisa que terminó.
-# Se atrapa con except y se sale con break.
+# EOFError = Ctrl-D = "no hay más entrada". No es falla del usuario:
+# es cómo se avisa que terminó. Se atrapa y se sale con break.
+# Ctrl-C = KeyboardInterrupt = cancelar el programa.
 #
-# Ctrl-D  -> termina la entrada (EOFError)
-# Ctrl-C  -> cancela el programa (KeyboardInterrupt)
-#
-# Detalle: cuando el usuario corta con Ctrl-D, el prompt del input()
-# ya se imprimió y nunca recibió Enter. Mi salida sale pegada a él.
-# Por eso el "\n" al principio del print final.
+# Al cortar con Ctrl-D el prompt del input() ya se imprimió y nunca
+# recibió Enter: mi salida sale pegada. Por eso el "\n" del print final.
 
 # ----------------------------------------------------------
-# 2.17 LIBRERÍAS, MÓDULOS Y PAQUETES     [nuevo · semana 3]
+# 2.17 LIBRERÍAS, MÓDULOS Y PAQUETES
 # ----------------------------------------------------------
-# módulo   = un archivo .py con funciones reutilizables
-# paquete  = módulos organizados en una carpeta (lleva un __init__.py)
-# librería estándar = viene con Python (random, statistics, sys, json, os)
-# paquete de terceros = hay que instalarlo (requests, pytest, cowsay)
+# módulo = un .py con funciones reutilizables
+# paquete = módulos en una carpeta
+# librería estándar = viene con Python (random, sys, json, os, csv, collections)
+# terceros = hay que instalarlos (requests, pytest, anthropic, dotenv)
 #
-# pip3 = el gestor que instala paquetes desde PyPI (pypi.org).
+# pip3 instala desde PyPI (pypi.org). npm es el equivalente de JS.
 #
-# DOS FORMAS DE IMPORTAR:
-#   import random              -> uso random.choice(...)
-#   from random import choice  -> uso choice(...)
-# La segunda trae solo lo que nombro. Es la que uso para mis propios
-# archivos en los tests: from twttr import shorten
+#   import random              -> random.choice(...)
+#   from random import choice  -> choice(...)
+# La segunda es la que uso para mis propios archivos:
+#   from classifier import classify
 #
-# LA STANDARD LIBRARY QUE YA USÉ:
-#   random.choice(lista)        un elemento al azar
-#   random.randint(a, b)        entero entre a y b, LOS DOS INCLUIDOS
-#   random.randrange(a, b)      entero entre a y b-1
-#   random.shuffle(lista)       mezcla EN EL LUGAR (no devuelve nada)
-#   statistics.mean(lista)      promedio
-#   json.dumps(obj, indent=2)   imprime un JSON legible
+# YA USADAS:
+#   random.choice / randint(a,b) incluye ambos / randrange(a,b) excluye b
+#   random.sample(lista, n)   n elementos SIN repetir
+#   random.shuffle(lista)     mezcla EN EL LUGAR
+#   random.seed(42)           fija la secuencia pseudo-aleatoria
+#   statistics.mean(lista)
+#   json.dumps(obj, indent=2) imprime un JSON legible
+#   collections.Counter(secuencia)  cuenta apariciones -> .most_common()
 #
-# KEYWORD ARGUMENTS: argumentos con nombre, para no depender del orden.
-#   print(a, b, sep="_")
-#   emoji.emojize(texto, language="alias")
-#   figlet.setFont(font=elegida)
+# random.seed(): Python genera PSEUDO-azar, una fórmula con un valor
+# inicial. Misma semilla -> misma secuencia, siempre. Sin seed usa la
+# hora del sistema. El 42 es arbitrario; lo que importa es que esté FIJO,
+# para que regenerar un archivo no me haga perder el trabajo hecho encima
+# y para que el experimento sea reproducible.
+#
+# KEYWORD ARGUMENTS: argumentos con nombre, no dependen del orden.
+#   print(a, b, sep="_")   ·   enumerate(lista, start=1)
 
 # ----------------------------------------------------------
-# 2.18 sys.argv — ARGUMENTOS DE LÍNEA DE COMANDOS   [nuevo]
+# 2.18 sys.argv
 # ----------------------------------------------------------
-# Lo que escribo después del nombre del archivo al correrlo:
 #   python3 bitcoin.py 2.5
+#   sys.argv[0] -> "bitcoin.py"    sys.argv[1] -> "2.5"    (strings)
 #
-# sys.argv es una LISTA de strings:
-#   sys.argv[0]  -> "bitcoin.py"     el nombre del archivo
-#   sys.argv[1]  -> "2.5"            el primer argumento REAL
-#   sys.argv[1:] -> todos los argumentos, sin el nombre del archivo
-#
-# len(sys.argv) CUENTA INCLUYENDO el nombre del archivo.
-#   una llamada correcta con 1 argumento -> len == 2
-#   error cuando len < 2
+# len(sys.argv) CUENTA el nombre del archivo: 1 argumento -> len == 2
 #
 # ORDEN DE LAS VALIDACIONES:
-#   1. ¿existe el argumento?   if len(sys.argv) < 2   <- ANTES de leer [1]
-#   2. ¿sirve el argumento?    try: float(sys.argv[1])
-#   Al revés, el IndexError revienta antes de llegar al chequeo.
+#   1. ¿existe?  if len(sys.argv) < 2    <- ANTES de leer [1]
+#   2. ¿sirve?   try: float(sys.argv[1])
+# Al revés, el IndexError revienta antes del chequeo.
 #
-# sys.exit("mensaje")  imprime el mensaje y termina el programa.
+# sys.exit("mensaje")  imprime y termina.
 
 # ----------------------------------------------------------
-# 2.19 APIs, requests Y JSON       [nuevo · semana 3]
+# 2.19 APIs, requests Y JSON
 # ----------------------------------------------------------
-# API = una puerta que un servidor deja abierta para que otros PROGRAMAS
-# le pidan datos, en vez de para personas con un navegador.
-# Mi código hace lo mismo que Chrome; lo que vuelve no está pensado
-# para que lo lea yo, sino para que lo use el programa.
+# API = puerta que un servidor deja abierta para que otros PROGRAMAS
+# le pidan datos. Lo que vuelve no está pensado para que lo lea yo.
 #
-#   import requests
 #   respuesta = requests.get("https://...")
 #
-# LA URL ES UN STRING. Va entre comillas, y con https:// adelante.
-# Sin el esquema -> MissingSchema (que es un RequestException).
+# LA URL ES UN STRING, con https:// adelante (sin esquema -> MissingSchema).
 #
 # Lo que devuelve get() es un OBJETO Response, NO un diccionario:
-#   respuesta["clave"]       -> TypeError: 'Response' object is not subscriptable
+#   respuesta["clave"]       -> TypeError: not subscriptable
 #   datos = respuesta.json() -> ESTO sí es un diccionario
 #
-# JSON = JavaScript Object Notation. Es un formato de TEXTO para
-# intercambiar datos entre computadoras que no comparten lenguaje.
-# Se PARECE a un diccionario pero es texto: por eso existe .json(),
-# que traduce. Y por eso un número puede llegar como "323186.4",
-# con comillas, y hay que pasarlo por float().
+# JSON = formato de TEXTO para intercambiar datos entre máquinas que no
+# comparten lenguaje. Se PARECE a un dict pero es texto: por eso existe
+# .json(), y por eso un número puede llegar como "323186.4" con comillas.
 #
-# CÓDIGOS DE ESTADO:
-#   200  OK, los datos vienen adjuntos
-#   401  Unauthorized: falta la key, está mal, o la borré
-#   429  Too Many Requests: me pasé del límite del plan
-#
+# CÓDIGOS: 200 OK · 401 key mal/ausente · 429 pasé el límite
 # Que el pedido no reviente NO significa que salió bien.
 #
-# EL FLUJO COMPLETO:
+# EL FLUJO:
 #   1. validar el argumento
-#   2. try: requests.get(url)  /  except requests.RequestException: sys.exit(...)
+#   2. try: requests.get(url) / except RequestException: sys.exit(...)
 #   3. datos = respuesta.json()
 #   4. print(datos) para VER la estructura antes de navegarla
-#   5. sacar el valor con corchetes encadenados
-#   6. convertir a número
-#   7. formatear para mostrar
+#   5. corchetes encadenados  6. convertir  7. formatear
 #
-# Para explorar el JSON sin escribir código: pegar la URL en el navegador.
+# Para explorar un JSON sin código: pegar la URL en el navegador.
 
 # ----------------------------------------------------------
-# 2.20 UNIT TESTS Y pytest      [nuevo · semana 3]
+# 2.20 UNIT TESTS Y pytest
 # ----------------------------------------------------------
-# Un test es "dado ESTE input, espero ESTE output". Es la base literal
-# de las evals del mes 2.
-#
-# assert  afirma que algo es True.
-#   Si es True, no pasa nada. Si es False -> AssertionError.
+# Un test es "dado ESTE input, espero ESTE output".
 #
 #   assert shorten("Twitter") == "Twttr"
+#   Si es True no pasa nada. Si es False -> AssertionError.
 #
-# pytest = programa que corre automáticamente todas las funciones que
-# empiezan con test_ y me da un reporte, en vez de frenar en el primero.
-#   pip3 install pytest        (con el venv activo)
+# pytest corre todas las funciones que empiezan con test_ y da un reporte.
 #   pytest test_archivo.py
 #
-# ESTRUCTURA DE UN ARCHIVO DE TEST:
-#   from twttr import shorten          <- importo la función a probar
+#   from twttr import shorten
 #
 #   def test_minusculas():
 #       assert shorten("twitter") == "twttr"
-#
 #   def test_mayusculas():
 #       assert shorten("TWITTER") == "TWTTR"
 #
-# UN CASO POR FUNCIÓN. Si meto todos los asserts en una sola función,
-# el primer fallo corta y no veo los demás.
+# UN CASO POR FUNCIÓN. Todos los asserts juntos: el primer fallo corta.
 #
 # UN TEST TIENE QUE PODER FALLAR.
-#   assert shorten("word").isalpha()     pasa aunque la función no haga nada
-#   assert shorten("word") != int        SIEMPRE True. No prueba nada.
-#   assert shorten("Twitter") == "Twttr" ESTO es un test.
-# Si no hay un == contra un valor que escribí YO a mano, no estoy midiendo.
+#   assert shorten("word").isalpha()   pasa aunque la función no haga nada
+#   assert shorten("word") != int      SIEMPRE True
+#   Si no hay un == contra un valor que escribí YO, no estoy midiendo.
 #
-# with pytest.raises(TypeError):   para verificar que algo LANZA un error
-#     shorten(5)
+#   with pytest.raises(TypeError):     para verificar que algo LANZA error
+#       shorten(5)
 #
-# CUANDO UN TEST FALLA, PUEDE SER EL CÓDIGO **O MI EXPECTATIVA**.
-#   "MuRcIElaGO" -> yo escribí "MRclg", lo correcto era "MRclG".
-#   El rojo era mío. Calcular el resultado esperado a mano, con cuidado.
+# CUANDO UN TEST FALLA PUEDE SER EL CÓDIGO **O MI EXPECTATIVA**.
+#   Escribí "MRclg", lo correcto era "MRclG". El rojo era mío.
 #
-# TIPOS: 0 y "$0" NO son iguales. Si cambio lo que devuelve la función,
-# tengo que cambiar los dos lados: el código Y los tests.
-#
-# Para que un archivo sea testeable: la lógica en una función que RECIBE
-# y DEVUELVE, sin input() ni print() adentro. Ver 2.8.
-#
-# check50 de un test (test_twttr, test_bank) NO prueba mi función:
-# corre MIS TESTS contra versiones rotas a propósito, y verifica que
-# los detecten. Un test flojo sale en rojo ahí.
+# check50 de un test corre MIS TESTS contra versiones rotas a propósito
+# y verifica que las detecten. Un test flojo sale en rojo ahí.
 
 # ----------------------------------------------------------
-# 2.21 ARCHIVOS — open, with Y CSV      [nuevo · semana 4]
+# 2.21 ARCHIVOS — open, with Y CSV
 # ----------------------------------------------------------
-# POR QUÉ EXISTEN: una lista vive en la MEMORIA del programa y se
-# borra cuando el programa termina. Un archivo queda en el disco.
-# Eso es persistencia: que los datos sobrevivan a la corrida.
+# Una lista vive en la MEMORIA y se borra al terminar. Un archivo queda
+# en disco. Eso es persistencia.
 #
 #   with open(ruta, modo) as f:
 #       <trabajo con f>
-#   <acá el archivo YA ESTÁ CERRADO>
+#   <acá YA ESTÁ CERRADO>
 #
-# El `with` cierra el archivo solo al salir del bloque, incluso si algo
-# explota adentro. Sin él hay que acordarse de f.close(). Siempre with.
+# El with cierra solo al salir, incluso si algo explota. Siempre with.
 #
-# MODOS:
-#   "r"   leer (el default). Si el archivo no existe -> FileNotFoundError
-#   "w"   escribir DESDE CERO. Si existe, lo VACÍA. Si no existe, lo crea.
-#   "a"   append: agregar al final sin borrar lo que había
+# MODOS:  "r" leer (default, falta -> FileNotFoundError)
+#         "w" escribir DESDE CERO — si existe, LO VACÍA
+#         "a" append al final
+# Elegir mal el modo es destructivo.
 #
-# Elegir mal el modo es destructivo: "w" sobre un archivo con datos
-# los borra sin preguntar.
+# LEER TEXTO:
+#   for line in f:        línea por línea — lo normal
+#   f.readlines()         todo a una lista de una (memoria de más)
+#   acumular en lista     cuando necesito todo junto para ordenar/contar
 #
-# LEER TEXTO PLANO — tres formas, de peor a mejor:
-#   lines = f.readlines()     carga TODO el archivo a una lista de una.
-#                             Anda, pero ocupa memoria de más.
-#   for line in f:            recorre línea por línea. Es lo normal.
-#   acumular en una lista     cuando necesito TODO junto para ordenar
-#                             o contar antes de mostrar.
+#   Cada línea trae el "\n" pegado -> .rstrip()
+#   f.write(texto)  escribe. El "\n" lo pongo YO.
 #
-# Cada línea leída trae el salto de línea del final pegado.
-#   .rstrip()   saca el "\n" (y cualquier espacio) del final
-#   Sin eso, cada print deja una línea en blanco de más.
+# BINARIOS (imágenes, audio, video): bytes crudos. Se abren con librerías
+# que saben interpretarlos (pillow para imágenes). open pelado no sirve.
 #
-# f.write(texto)   escribe. El "\n" lo pongo YO: write no salta de línea.
-#
-# sorted(coleccion)                 devuelve una copia ordenada (A→Z)
-# sorted(coleccion, reverse=True)   al revés (Z→A)
-#   Es función suelta, no método, y NO modifica el original: devuelve
-#   una copia. Para ordenar hay que tener todo junto antes -> por eso
-#   acumular en una lista y ordenar después de cerrar el archivo.
-#
-# OTROS TIPOS DE ARCHIVO: todo lo que no es texto (imágenes, audio,
-# video) son archivos BINARIOS — bytes crudos, no letras. Se abren con
-# librerías que saben interpretarlos: pillow (PIL) para imágenes, etc.
-# El open pelado no sirve para leerlos a ojo.
-#
-# CSV — dos formas de leer/escribir:
+# CSV — dos familias:
 #   csv.reader / csv.writer          trabajan con LISTAS (por posición)
-#   csv.DictReader / csv.DictWriter  trabajan con DICCIONARIOS (por nombre)
-# La versión Dict es más legible: row["house"] en vez de row[1].
+#   csv.DictReader / csv.DictWriter  trabajan con DICTS (por nombre)
+#   La versión Dict es más legible: row["house"] en vez de row[1].
 #
 #   reader = csv.DictReader(f)
-#       Usa la PRIMERA FILA del archivo como nombres de columna.
-#       Pasarle fieldnames= es decirle "este archivo NO tiene encabezado",
-#       y entonces la fila de títulos se procesa como si fuera un dato.
+#       Usa la PRIMERA FILA como nombres de columna.
+#       Pasarle fieldnames= es decirle "este archivo NO tiene encabezado".
+#       El reader SE CONSUME: para recorrerlo varias veces, list(reader)
+#       ADENTRO del with.
+#
+#   writer = csv.writer(f)
+#       writer.writerow(["text"])      <- el encabezado, A MANO, una vez
+#       writer.writerow([valor])       <- UNA LISTA de celdas
+#       Si le paso el string pelado, lo trata como secuencia de caracteres
+#       y escribe una letra por columna.
+#       fieldnames NO es parámetro de csv.writer.
 #
 #   writer = csv.DictWriter(f, fieldnames=[...])
-#       Los fieldnames van acá, UNA vez, al crear el writer.
-#       writer.writeheader()      escribe la fila de títulos. Sin "=".
-#       writer.writerow({...})    una fila. Recibe un diccionario. Sin "=".
+#       fieldnames van acá, UNA vez. Definen el ORDEN de las columnas
+#       (manda esto, no el orden de las claves del dict).
+#       writer.writeheader()     la fila de títulos. SIN "=".
+#       writer.writerow({...})   un diccionario. SIN "=".
 #
-# writeheader() y writerow() escriben y no devuelven nada útil.
-# Asignarlas (writer = writer.writeheader()) destruye el writer.
-# Mismo caso que .append().
+#   writeheader() y writerow() no devuelven nada útil. Asignarlas
+#   (writer = writer.writeheader()) destruye el writer. Igual que .append().
 #
-# Al escribir CSV va open(ruta, "w", newline="") para que no queden
-# líneas en blanco entre filas en algunos sistemas.
+#   Al escribir: open(ruta, "w", newline="")
 #
 # EL PATRÓN "TRANSFORMAR UN ARCHIVO" (scourgify):
-#   Son DOS archivos y DOS bloques secuenciales, no uno anidado.
-#   1. abrir el de ENTRADA (sys.argv[1]), recorrerlo, ir armando una
-#      LISTA con los datos ya limpios
-#   2. cerrar eso, abrir el de SALIDA (sys.argv[2]) en "w", escribir
-#      el encabezado y después la lista
-#
-#   1 = entrada, 2 = salida. Siempre. Confundirlos hace que el programa
-#   lea y escriba el mismo archivo, y el "w" lo vacía antes de leerlo.
+#   DOS archivos, DOS bloques secuenciales, no uno anidado.
+#   1. abrir ENTRADA (sys.argv[1]), recorrer, armar una lista limpia
+#   2. abrir SALIDA (sys.argv[2]) en "w", escribir encabezado + lista
+#   1 = entrada, 2 = salida. SIEMPRE.
 
 
-# ##########################################################
 # ##########################################################
 #  PARTE 3 · PATRONES QUE SE REPITEN
 # ##########################################################
-# ##########################################################
 
 # ----------------------------------------------------------
-# 3.1 EL ACUMULADOR      (camel, twttr, professor)
+# 3.1 EL ACUMULADOR
 # ----------------------------------------------------------
 #   resultado = ""              <- AFUERA del loop. Nace vacío.
 #   for letra in palabra:
 #       resultado += algo       <- ADENTRO. Crece cada vuelta.
-#   print(resultado)            <- AFUERA, después. UN solo print.
+#   print(resultado)            <- AFUERA. UN solo print.
 #
-# Si la variable nace ADENTRO del loop, se reinicia cada vuelta.
+# Si nace ADENTRO, se reinicia cada vuelta.
+# El VALOR INICIAL define el tipo: "" acumula texto, 0 cuenta, [] junta.
 #
-# El VALOR INICIAL define qué tipo de acumulador es:
-#   texto = ""   acumula texto        conteo = 0   cuenta
-#
-# EL ERROR QUE MÁS ME COSTÓ:
-#   poner print() adentro del loop.
-#   El if NO decide qué imprimir -> decide QUÉ AGREGAR a la variable.
+# EL ERROR QUE MÁS ME COSTÓ: print() adentro del loop.
+# El if NO decide qué imprimir -> decide QUÉ AGREGAR a la variable.
 
 # ----------------------------------------------------------
-# 3.2 LA BANDERA         (plates, professor)
+# 3.2 LA BANDERA
 # ----------------------------------------------------------
-# Una variable booleana que RECUERDA algo del loop para usarlo DESPUÉS.
+# Una booleana que RECUERDA algo del loop para usarlo DESPUÉS.
 #
-#   correcto = False            <- afuera del loop interno
+#   correcto = False            <- afuera
 #   for _ in range(3):
-#       ...
 #       if acertó:
-#           correcto = True     <- la prendo
-#           score += 1
+#           correcto = True
 #           break
 #   if correcto == False:       <- al salir, sé POR QUÉ salí
-#       print(la respuesta)
 #
-# Un loop por sí solo no me dice si terminó por éxito o por agotarse.
-# La bandera es lo que distingue los dos finales.
-#
-# Una bandera que se prende pero NUNCA SE CONSULTA no sirve de nada.
+# Un loop no me dice si terminó por éxito o por agotarse.
+# Una bandera que se prende pero nunca se consulta no sirve.
 
 # ----------------------------------------------------------
-# 3.3 "BUSCÁ EL FALLO"   (plates)
+# 3.3 "BUSCÁ EL FALLO"
 # ----------------------------------------------------------
 # Cuando TODAS las condiciones deben cumplirse:
-#
 #   if <regla 1 falla>: return False
 #   if <regla 2 falla>: return False
-#   return True                      <- solo se alcanza si sobrevivió todo
+#   return True            <- solo se alcanza si sobrevivió todo
 #
-# Cada if describe el CASO MALO y sale temprano.
-# UN SOLO return True, al final.
-#
-# Al revés (cada regla devuelve True) alcanza con cumplir UNA sola.
+# Cada if describe el CASO MALO y sale temprano. UN SOLO return True.
+# Al revés, alcanza con cumplir UNA sola regla.
 #
 # Y una regla NO es un valor con el que comparar: es una PREGUNTA.
-#   s.isalnum()  YA ES la respuesta. No se compara con nada más.
+# s.isalnum() YA ES la respuesta.
 
 # ----------------------------------------------------------
 # 3.4 NORMALIZAR PARA COMPARAR, NO PARA GUARDAR
 # ----------------------------------------------------------
-# El .lower() va del lado de la PREGUNTA, no del dato que voy a usar.
-#
 #   if letter.lower() not in "aeiou":
-#       resultado += letter          <- la letra ORIGINAL, con su mayúscula
+#       resultado += letter     <- la letra ORIGINAL
 #
-# Y HAY QUE NORMALIZAR LOS DOS LADOS del ==.
-#
+# Y NORMALIZAR LOS DOS LADOS del ==.
 # La normalización va donde el dato ENTRA a la función que lo usa.
 
 # ----------------------------------------------------------
 # 3.5 EL DATO DEL USUARIO NO ES UNA INSTRUCCIÓN
 # ----------------------------------------------------------
-# Si el usuario escribe "+", eso es el TEXTO "+" guardado en una variable.
-# Python no lo ejecuta. Yo tengo que MIRAR ese dato con un if y decidir.
+# Si escribe "+", eso es el TEXTO "+" en una variable. Python no lo
+# ejecuta. Yo tengo que MIRARLO con un if y decidir.
+#
+# Lo mismo con el texto que le paso a un LLM: encerrarlo en etiquetas
+# <message>...</message> le marca al modelo dónde empieza y termina el
+# DATO, para que algo que parezca una orden adentro no se tome como
+# instrucción mía. Es seguridad, no estética.
 
 # ----------------------------------------------------------
-# 3.6 EL PROGRAMA EN FASES      (game, professor)
+# 3.6 EL PROGRAMA EN FASES
 # ----------------------------------------------------------
-# Cuando un programa tiene momentos distintos, son BLOQUES SEPARADOS,
-# no un loop que hace todo:
-#
 #   FASE 1   while True: pedir y validar el setup -> break/return
 #   UNA VEZ  lo que se decide una sola vez (el número secreto)
 #   FASE 2   while/for: el ciclo principal
 #
 # Lo que se sortea o calcula UNA VEZ va AFUERA del loop principal.
 # Adentro se re-hace cada vuelta y el objetivo cambia solo.
-# (Mi bug en game: un random nuevo en cada intento.)
 
 # ----------------------------------------------------------
-# 3.7 LA FUNCIÓN TESTEABLE       [nuevo · semana 3]
+# 3.7 CRUZAR DOS ARCHIVOS POR UNA COLUMNA
 # ----------------------------------------------------------
-# Para poder MEDIR algo, ese algo tiene que DEVOLVER un valor.
+#   1. leer el archivo A como lista de dicts
+#   2. leer B como DICCIONARIO indexado por la columna común (ver 2.13)
+#   3. recorrer A, buscar en el índice, comparar
 #
-#   def transformar(dato):      <- recibe, normaliza, calcula, RETURN
-#   def main():                 <- input, llama, print
+# REGLA: el texto de la columna que une los dos archivos tiene que venir
+# de la MISMA FUENTE. Copiarlo a mano desde una terminal, una captura o
+# una versión vieja garantiza que algo no coincida — y falla en silencio
+# o con un KeyError que no explica la causa.
+
+# ----------------------------------------------------------
+# 3.8 MEDIR ANTES DE MEJORAR (evals)
+# ----------------------------------------------------------
+# Que "corra sin errores" NO significa que "funcione". Un try/except que
+# no salta y un CSV bien escrito no dicen nada sobre si el contenido
+# es correcto.
 #
-# Una función que imprime no se puede testear: no hay valor que comparar.
-# Una función que pide input cuelga el test.
-# Una función que devuelve texto decorado ("Output: X") nunca matchea.
+# Para saberlo: un conjunto de casos donde YO sé la respuesta correcta.
+# Misma idea que un unit test, pero el resultado esperado no se calcula:
+# lo decido yo.
 #
-# Este patrón es el mismo que voy a necesitar en la semana 4 para medir
-# el clasificador: la parte que decide devuelve un dato, y otra capa
-# lo muestra.
+# EL ORDEN, Y NO SE SALTEA NINGUNO:
+#   1. Escribir las reglas de decisión ANTES de etiquetar.
+#      Si no, la fila 3 y la 17 —que son el mismo caso— salen distinto,
+#      y después no sé si el error es del modelo o mío.
+#   2. Etiquetar SIN mirar lo que dijo el modelo (sesgo de anclaje).
+#   3. Elegir casos difíciles a propósito, no solo al azar.
+#   4. MEDIR EL RUIDO: re-correr sin cambiar nada.
+#   5. UN experimento por vez, anotando qué cambié y qué pasó.
+#   6. Leer los desacuerdos, no solo el porcentaje. El número dice
+#      CUÁNTO; la lista dice QUÉ arreglar.
+#   7. Reportar el número CON su margen.
+#
+# QUÉ SE PUEDE EVALUAR CON == :
+#   valor de lista cerrada  -> sí. Binario, contable.
+#   texto libre             -> NO.
+#     "Customer lost card, needs replacement"
+#     "Customer needs a replacement card after losing theirs"
+#     significan lo mismo y == dice False -> 0/20 sin que nada esté mal.
+#   Para texto libre: model-based grading (un modelo como juez).
+#   Mientras tanto: medir lo medible y ser EXPLÍCITO sobre lo que quedó
+#   sin medir.
+
+# ----------------------------------------------------------
+# 3.9 RUIDO vs SEÑAL
+# ----------------------------------------------------------
+# Un LLM no es determinístico: mismo input puede dar distinto output.
+#
+# Corrí la misma eval dos veces SIN CAMBIAR NADA:
+#   corrida 1: category 15/20 · sentiment 14/20 · priority 15/20
+#   corrida 2: category 15/20 · sentiment 14/20 · priority 17/20
+#
+# priority se movió +2 solo. Entonces cualquier cambio que la mueva
+# menos de 2 puntos NO PRUEBA NADA.
+#
+# Sin medir el ruido primero, confundo azar con mejora, anoto "funcionó",
+# y construyo encima de una conclusión falsa.
+#
+# COROLARIO: el campo más ruidoso era el peor definido.
+# Criterio vago -> el modelo duda -> el azar decide.
+# Si un número varía mucho, antes de buscar un modelo mejor, revisar
+# si mi definición es ambigua.
+
+# ----------------------------------------------------------
+# 3.10 EL MODELO NO FALLA, LE FALTA MI INFORMACIÓN
+# ----------------------------------------------------------
+# 3 de mis 5 errores de categoría eran una regla que YO tenía escrita
+# en el README y nunca puse en el system prompt. La copié -> los 3
+# errores desaparecieron. +3 puntos.
+#
+# Reflejo natural: "este modelo es malo, probemos uno más grande".
+# Pregunta más barata: "¿le dije lo que yo sé?"
+# La brecha entre lo que yo sé y lo que el prompt dice es el primer
+# lugar donde mirar, y es gratis de arreglar.
+#
+# Y AL REVÉS: MI GROUND TRUTH TAMBIÉN SE EQUIVOCA.
+# El modelo devolvió "positive" sobre un mensaje que termina en
+# "Thank you." Mi propia definición decía positive = thanks. Tenía razón
+# él. Las evals no son un examen donde el modelo rinde y yo corrijo:
+# son dos criterios comparándose. Por eso los sets se REVISAN.
+#
+# UN EJEMPLO EN UN PROMPT ES UNA INVITACIÓN A COPIARLO.
+#   Puse "like the card ending in 4412" -> el modelo generó mensajes
+#   con 4412. Puse "refer to it as 'the card ending in XXXX'" -> unos
+#   copiaron los dígitos reales y otros escribieron XXXX literal.
+#   Para prohibir algo: decir qué NO hacer, sin dar una frase rellenable.
+
+# ----------------------------------------------------------
+# 3.11 MEDIR EL COSTO
+# ----------------------------------------------------------
+# El objeto de client.messages.create() trae .usage con input_tokens
+# y output_tokens.
+#
+# OJO: una función que hace "return message.content[0].text" DESCARTA
+# el usage. Para medirlo hay que guardar el objeto entero.
+#
+#   costo = (usage.input_tokens  / 1_000_000) * precio_input
+#         + (usage.output_tokens / 1_000_000) * precio_output
+#
+# Los precios son por MILLÓN y son DOS distintos. El de salida suele
+# ser varias veces el de entrada.
+#
+# NO hardcodear los números de tokens: usar usage.input_tokens, si no
+# quedo midiendo una versión vieja del prompt.
+#
+# MI CASO (Haiku 4.5, oct-2026): 464 entrada + 53 salida por mensaje
+#   $0,00073 por mensaje · $0,15 los 200 · $73 los 100.000
+#
+# LO QUE REVELA LA CUENTA:
+#   - ~86% de los tokens de entrada son el system prompt, reenviado
+#     en CADA llamada.
+#   - La salida es el 10% de los tokens pero el 37% del costo (vale 5x).
+#
+# PALANCAS (identificadas, no implementadas):
+#   prompt caching  Haiku 4.5 pide un mínimo de 4.096 tokens cacheables.
+#                   Mi prompt tiene ~400: no califica. Serviría si crece.
+#   Batch API       encaja: nadie espera un clasificador que corre sobre
+#                   un CSV.
+#   sacar el summary  bajaría ~1/3 del costo, gratis, si no se necesita.
+#
+# A $73 por 100.000 no vale la pena optimizar todavía. Pero saber que
+# las palancas existen y cuánto mueven vale cuando un cliente pregunta.
 
 
-# ##########################################################
 # ##########################################################
 #  PARTE 4 · MIS ERRORES
 # ##########################################################
-# ##########################################################
 
 # ----------------------------------------------------------
-# 4.1 LOS QUE REPITO (por orden de tiempo perdido)
+# 4.1 LAS FAMILIAS (buscar por tipo, no por número)
 # ----------------------------------------------------------
-# 1. INVENTAR SINTAXIS Y NO CORRERLA.
-#    .isnum, .isfloat, .add, len(6), .split(":", ","), figlet.random,
-#    random.randint sin paréntesis, lista.join()
-#    Escribo 15 líneas sobre algo que nunca corrió.
-#    -> REPL primero. Una línea. 30 segundos.
 #
-# 2. CORRER SIN GUARDAR. La bolita ● tiene que ser X. ⌘+S.
+# ===== A · NO LO CORRÍ / NO LO GUARDÉ =====================
+# A1. Inventar sintaxis y no probarla.
+#     .isnum, .isfloat, .add, len(6), figlet.random, lista.join()
+#     Escribo 15 líneas sobre algo que nunca corrió. -> REPL, 30 segundos.
+# A2. Correr sin guardar. La bolita ● tiene que ser X. ⌘+S.
+# A3. Carpeta equivocada, o venv desactivado.
+#     Leer la palabra antes del %, y si está el (.venv).
 #
-# 3. ESTAR EN LA CARPETA EQUIVOCADA, o con el venv desactivado.
-#    Leer la palabra antes del %, y si está el (.venv).
+# ===== B · LITERAL vs VARIABLE (mi familia dominante) =====
+# B1. == cuando quiero =, o los lados del = invertidos.
+# B2. Comillas donde iba la variable.
+#       writerow(["message"])  -> escribe la palabra 200 veces
+#       writerow([message])    -> escribe el contenido
+# B3. Valor fijo donde iba el parámetro.
+#       stop_sequences=["```"] adentro de create() en vez del parámetro
+#       que recibí. La función lo acepta, lo ignora, y NO SE QUEJA.
+# B4. Nombre de archivo sin comillas.
+#       open(messages.csv)   -> busca el atributo .csv de una variable
+# B5. El nombre de un error usado como condición.
+#       elif FileNotFoundError:  -> siempre True
+# B6. Un comentario explicativo convertido en código.
+#       row["name"] is "last, name" era una descripción, no una orden.
+# B7. Llaves fuera de una f-string: print({x}) imprime un set.
 #
-# 4. == cuando quiero =, o los lados del = invertidos.
+# ===== C · EL VALOR SE PIERDE ============================
+# C1. Líneas que calculan y tiran el resultado.
+#     z != 0 / s.isalnum() / shorten(word) / message.content[0].text
+#     sueltas. Para que una condición HAGA algo va en un if. Para que
+#     un valor sobreviva va con =.
+# C2. Variable suelta en una línea queriendo decir "volvé a preguntar".
+# C3. Asignar el resultado de un método que devuelve None.
+#     x = lista.append()  ·  writer = writer.writeheader()
 #
-# 5. USAR LA VARIABLE EQUIVOCADA adentro del loop, o dejar que el for
-#    me pise una variable (for result in range(3)).
+# ===== D · ADENTRO / AFUERA DEL LOOP =====================
+# D1. El acumulador o la bandera nacen adentro -> se reinician.
+# D2. Lo que se decide UNA vez queda adentro -> se re-hace cada vuelta
+#     (el random nuevo en cada intento, en game).
+# D3. print() adentro del loop cuando iba uno solo al final.
+# D4. El for me pisa una variable: for result in range(3).
+# D5. Escribir el archivo adentro del loop -> queda solo la última vuelta.
 #
-# 6. LÍNEAS QUE CALCULAN Y TIRAN EL RESULTADO.
-#    z != 0  /  s.isalnum()  /  shorten(word)  /  (input(...))  sueltas.
-#    Para que una condición HAGA algo tiene que estar en un if.
-#    Para que un valor sobreviva tiene que guardarse con =.
+# ===== E · pass / continue / break =======================
+# E1. pass donde va continue: sigue bajando y ejecuta lo que quería
+#     saltear. Bug silencioso.
+# E2. break donde va return, dentro de una función.
 #
-# 7. VARIABLES SUELTAS EN UNA LÍNEA queriendo decir "volvé a preguntar".
-#    Escribir `n` solo no hace nada. En un while True, volver arriba
-#    es NO hacer nada; para saltear el resto de la vuelta va continue.
+# ===== F · try MAL PUESTO ================================
+# F1. La línea riesgosa afuera del try -> el except no sirve.
+# F2. Un solo except para errores que necesitan reacciones distintas.
+# F3. Un except con pass sobre un error real -> esconde la causa y
+#     después explota en otro lado con un traceback engañoso.
 #
-# 8. pass DONDE VA continue. pass sigue bajando y ejecuta lo que
-#    quería saltear. Bug silencioso.
-#
-# 9. LA LÍNEA RIESGOSA AFUERA DEL try. El except entonces no sirve.
-#
-# 10. LA FUNCIÓN QUE PIDE input() ADENTRO cuando ya recibió el dato.
+# ===== G · LA FUNCIÓN NO ES TESTEABLE ====================
+# G1. input() adentro de una función que ya recibió el dato.
 #     Pisa el parámetro y cuelga los tests.
+# G2. Devuelve texto decorado ("Output: X", "$0") en vez del valor.
+# G3. Normaliza en main() y no adentro de la función.
+# G4. Mezclar escalas (0.75 vs 75) o tipos (0 vs "$0").
 #
-# 11. LA FUNCIÓN QUE DEVUELVE TEXTO DECORADO ("Output: X", "$0")
-#     en vez del valor pelado.
-#
-# 12. NORMALIZAR EN main() Y NO EN LA FUNCIÓN. El test le manda el dato
-#     crudo y falla.
-#
-# 13. EXPECTATIVA MAL CALCULADA EN UN TEST. El rojo puede ser mío.
-#
-# 14. TESTS QUE NO PUEDEN FALLAR (comparar contra un tipo, o pedir
+# ===== H · TESTS QUE NO MIDEN ============================
+# H1. Expectativa mal calculada a mano. El rojo puede ser mío.
+# H2. Tests que no pueden fallar (comparar contra un tipo, o pedir
 #     algo que se cumple siempre).
 #
-# 15. NORMALIZAR UN SOLO LADO de la comparación.
+# ===== I · VARIABLE O MÉTODO EQUIVOCADO ==================
+# I1. Acumular la variable que no es.
+#     all_messages.extend(messages) en vez de batch. El print de
+#     progreso mostraba números que parecían correctos: el peor bug.
+# I2. append donde iba extend -> 10 elementos en vez de 200.
+# I3. Parámetro de otra clase: csv.writer(f, fieldnames=...)
+# I4. Intercambiar sys.argv[1] y [2]. 1 = entrada, 2 = salida.
+# I5. Dos operaciones en un solo "=" con desbalance de nombres.
+# I6. .strip() para un espacio que está en el medio.
+# I7. Olvidarme el https:// en una URL.
 #
-# 16. PONER EL FORMATO AFUERA de las llaves del f-string.
-#
-# 17. VALORES ESCRITOS A MANO que deberían ser variables.
-#     randrange(1, 11) cuando el usuario eligió el nivel.
-#
-# 18. MEZCLAR ESCALAS (0.75 vs 75) o TIPOS (0 vs "$0").
-#
-# 19. UN SOLO except PARA ERRORES QUE NECESITAN REACCIONES DISTINTAS,
-#     o un except con pass que esconde la causa real.
-#
-# 20. OLVIDARME EL https:// en una URL.
-#
-# 21. USAR EL NOMBRE DE UN ERROR COMO SI FUERA UNA CONDICIÓN.
-#     elif FileNotFoundError:   -> siempre True, no compara nada.
-#     El nombre de un error va después de `except`, o en pytest.raises.
-#     Nunca en un if. No se PREGUNTA si algo va a fallar: se intenta.
-#
-# 22. INTERCAMBIAR sys.argv[1] Y sys.argv[2] entre el open y el mensaje
-#     de error. 1 = entrada, 2 = salida.
-#
-# 23. CONVERTIR UN COMENTARIO EXPLICATIVO EN UNA LÍNEA DE CÓDIGO.
-#     row["name"] is "last, name" era una descripción de qué contenía
-#     la variable, no una instrucción.
-#
-# 24. INTENTAR DOS OPERACIONES EN UN SOLO "=" CON DESBALANCE DE NOMBRES.
-#     a, b, c = algo.split(","), otra_cosa   -> tres nombres, dos valores.
-#     Dos operaciones distintas = dos líneas.
-#
-# 25. .strip() PARA UN ESPACIO QUE ESTÁ EN EL MEDIO.
-#     strip solo toca los extremos. "Bell, Katie".split(",") deja
-#     " Katie" con el espacio. El separador tiene que incluirlo.
+# ===== J · DESTRUCTIVO / CARO ============================
+# J1. Escribir el nombre de archivo equivocado en un open(..., "w").
+#     Casi piso 200 clasificaciones con pick_rows.py.
+#     ANTES de correr algo que escribe: leer el nombre de salida.
+#     Si pasa: git restore <archivo>
+# J2. Re-correr un script que gasta API para probar un cambio cosmético.
+#     Con Haiku son centavos. Con un modelo caro y 100k filas, no.
+# J3. Guardar un archivo sin la extensión .py. Corre, pero no se importa
+#     y VS Code no lo trata como Python.
+# J4. Medir con un modelo y cotizar con otro.
 
 # ----------------------------------------------------------
-# 4.2 QUÉ SIGNIFICA CADA ERROR
+# 4.2 QUÉ SIGNIFICA CADA TRACEBACK
 # ----------------------------------------------------------
-# LEER DE ABAJO HACIA ARRIBA. La última línea dice QUÉ,
-# las de arriba DÓNDE, y el ^^^^ marca la posición exacta.
+# LEER DE ABAJO HACIA ARRIBA. La última línea dice QUÉ, las de arriba
+# DÓNDE, y el ^^^^ marca la posición exacta.
 #
 # NameError: name 'X' is not defined
-#   Python leyó X como variable y no existe.
-#   O es una palabra suelta sin comillas, o es de OTRA función,
-#   o la línea que la creaba está adentro de un except que hizo pass.
-#
-# ModuleNotFoundError: No module named 'dotenv'
-#   La librería no está instalada EN EL PYTHON QUE ESTOY USANDO.
-#   Casi siempre: la instalé afuera del venv y corro adentro (o al revés).
-#
-# AttributeError: 'str' object has no attribute 'isnum'
-#   Ese método no existe PARA ESE TIPO, o me lo inventé.
-#
-# AttributeError: 'NoneType' object has no attribute 'strip'
-#   Le apliqué un método al resultado de algo que devuelve None:
-#   print(), o .append() de una lista.
-#
-# AttributeError: 'list' object has no attribute 'join'
-#   join es del separador: " ".join(lista), no lista.join().
+#   O es una palabra suelta sin comillas, o es de OTRA función, o la
+#   línea que la creaba está adentro de un except que hizo pass.
 #
 # UnboundLocalError: cannot access local variable 'x'
 #   La variable se crea SOLO adentro de un if que no se cumplió.
+#   O: escribí  message = message.messages.create(...)  — Python ve que
+#   'message' se asigna en esa línea, la trata como local, y al evaluar
+#   el lado derecho todavía no tiene valor. Si el nombre fuera otro,
+#   sería NameError (más claro). Que coincida con el destino lo disfraza.
+#
+# ModuleNotFoundError: No module named 'X'
+#   No está instalada EN EL PYTHON QUE ESTOY USANDO (venv vs sistema).
+#
+# AttributeError: 'str' object has no attribute 'isnum'
+#   Ese método no existe para ese tipo, o me lo inventé.
+# AttributeError: 'NoneType' object has no attribute 'X'
+#   Le apliqué un método al resultado de algo que devuelve None
+#   (print, .append, .writeheader).
+# AttributeError: 'list' object has no attribute 'join'
+#   join es del separador: " ".join(lista)
 #
 # TypeError: 'dict' object is not callable
-#   Usé paréntesis donde van corchetes. fruits("Apple") -> fruits["Apple"]
-#
+#   Paréntesis donde van corchetes. fruits("Apple") -> fruits["Apple"]
 # TypeError: 'Response' object is not subscriptable
-#   Le puse corchetes al objeto de requests. Primero .json().
-#
+#   Corchetes al objeto de requests. Primero .json()
 # TypeError: 'type' object is not iterable
-#   Le pasé un TIPO (int) donde iba un valor. shorten(int) -> shorten("5")
-#
-# TypeError: float() argument must be a string or a real number, not 'dict'
+#   Le pasé un TIPO donde iba un valor. shorten(int) -> shorten("5")
+# TypeError: float() argument must be ... not 'dict'
 #   Me quedé un nivel corto navegando el JSON. Falta otro corchete.
-#
 # TypeError: object of type 'int' has no len()
-#   len() mide cosas con longitud. Un número no tiene.
-#
-# TypeError: unsupported operand type(s) for *: 'dict' and 'float'
-#   Estoy operando con el contenedor, no con el valor de adentro.
-#
+# TypeError: unsupported operand for *: 'dict' and 'float'
+#   Opero con el contenedor, no con el valor de adentro.
 # TypeError: '<=' not supported between 'int' and 'str'
-#   Comparo un número con un string. Falta convertir.
+#   Comparo número con string. Falta convertir.
+# TypeError: writer() takes no keyword arguments
+#   fieldnames es de DictWriter, no de csv.writer.
+# TypeError: create() got an unexpected keyword argument 'X'
+#   Typo en el nombre de un parámetro (stop_sequencies).
 #
 # ValueError: invalid literal for int() with base 10: 'cat'
-#   Quise convertir a número algo que no lo es.
-#   Se atrapa con except ValueError.
-#
+#   Quise convertir algo que no es número. except ValueError.
 # ValueError: not enough values to unpack
-#   Los nombres a la izquierda del = no coinciden con lo que devolvió split.
-#
-# FileNotFoundError
-#   El archivo no existe, o estoy parado en otra carpeta.
-#   No se previene con un if: se atrapa alrededor del open.
-#
-# AttributeError: 'NoneType' object has no attribute 'writerow'
-#   Asigné el resultado de writeheader() al writer y lo destruí.
+#   Los nombres a la izquierda del = no coinciden con lo que dio split.
 #
 # IndexError: list index out of range
 #   Pedí una posición que no existe. Clásico: sys.argv[1] sin argumento.
 #   -> chequear len() ANTES de leer el índice.
 #
-# KeyError: 'Mango'
-#   Esa clave no está en el diccionario.
+# KeyError: 'X'
+#   Esa clave no está en el diccionario. Si es un cruce de archivos:
+#   ese texto está en uno y no en el otro, casi siempre porque se copió
+#   a mano o desde una versión vieja. -> if clave not in dic: continue
+#
+# FileNotFoundError
+#   El archivo no existe, o estoy parado en otra carpeta. No se previene
+#   con un if: se atrapa alrededor del open.
 #
 # AssertionError: assert 'MRclG' == 'MRclg'
-#   Un test falló. Pytest muestra el diff: - lo esperado, + lo obtenido.
-#   Revisar si el error está en el código O en mi expectativa.
+#   Un test falló. Pytest muestra el diff. Revisar si el error está en
+#   el código O en mi expectativa.
 #
-# requests.exceptions.MissingSchema
-#   A la URL le falta https://
+# json.JSONDecodeError
+#   Lo que volvió no era JSON válido. Casi siempre: el modelo agregó
+#   texto alrededor, o max_tokens cortó la respuesta a la mitad.
 #
-# EOFError                Ctrl-D. Fin de la entrada, no una falla.
-# KeyboardInterrupt       Ctrl-C. Cancelé el programa a mano.
+# requests.exceptions.MissingSchema     falta https://
+# EOFError / KeyboardInterrupt          Ctrl-D / Ctrl-C
+# ZeroDivisionError                     división por cero
 #
 # SyntaxError: cannot assign to function call here
 #   Puse la llamada a la izquierda del =.
-#
 # SyntaxError: invalid syntax
 #   Falta paréntesis, coma, comillas o los dos puntos.
 #   También: except (A) (B): en vez de except (A, B):
-#
-# ZeroDivisionError       División por cero.
+# IndentationError: unexpected indent
+#   Indenté una sentencia de nivel superior.
 #
 # command not found: X
-#   zsh no conoce X. bitcoin.py no es un comando: python3 bitcoin.py
-#
+#   bitcoin.py no es un comando -> python3 bitcoin.py
 # can't open file '...': No such file or directory
-#   Estoy parado en otra carpeta. Leer el prompt y hacer cd.
+#   Estoy en otra carpeta. Leer el prompt y hacer cd.
 
 
-# ##########################################################
 # ##########################################################
 #  PARTE 5 · RUTINA
 # ##########################################################
-# ##########################################################
 
 # ----------------------------------------------------------
-# 5.1 CADA EJERCICIO DE CS50P
+# 5.1 UN EJERCICIO DE CS50P
 # ----------------------------------------------------------
-# 1. Leer la página ENTERA antes de escribir.
-#    La consigna está en "Implementation Details", arriba del Demo.
+# 1. Leer la página ENTERA. La consigna está en "Implementation Details".
 # 2. Escribir las reglas en una lista, cada una como PREGUNTA.
-# 3. Mirar el Demo carácter por carácter: espacios, mayúsculas, dos puntos.
-#    check50 compara LITERAL. Copio el texto del enunciado.
-# 4. cd a la carpeta. Archivo con el nombre EXACTO. Venv activo si hace falta.
-# 5. UNA regla / UN paso por vez. Correr. Verificar. Recién ahí la siguiente.
-# 6. Probar YO los casos del enunciado ANTES de check50,
-#    incluyendo los "feos": el que se pasa, el vacío, el negativo, el cero.
-# 7. check50 cs50/problems/2022/python/<ejercicio>
-# 8. Si sale rojo, leer QUÉ input falló. Correr ese input a mano.
-# 9. submit50 (check50 no entrega nada)
+# 3. Mirar el Demo carácter por carácter. check50 compara LITERAL.
+# 4. cd a la carpeta. Nombre EXACTO. Venv si hace falta.
+# 5. UNA regla por vez. Correr. Verificar. Recién ahí la siguiente.
+# 6. Probar YO los casos feos ANTES de check50: el que se pasa, el vacío,
+#    el negativo, el cero.
+# 7. check50 · 8. si sale rojo, correr ese input a mano · 9. submit50
 
 # ----------------------------------------------------------
 # 5.2 SI EL EJERCICIO PIDE TESTS
 # ----------------------------------------------------------
-# 1. El archivo a probar y el test van EN LA MISMA CARPETA.
-# 2. Reestructurar primero: la lógica en una función que recibe y devuelve.
-#    Normalización adentro de esa función.
+# 1. El archivo y el test, EN LA MISMA CARPETA.
+# 2. Reestructurar primero: lógica en una función que recibe y devuelve,
+#    con la normalización adentro.
 # 3. Un test por caso, cada uno en su propia def test_algo().
-# 4. Calcular a mano el resultado esperado. Con cuidado.
-# 5. pytest test_archivo.py
-# 6. Antes de darlo por bueno: preguntarme si cada test PODRÍA fallar.
+# 4. Calcular a mano el esperado. Con cuidado.
+# 5. pytest · 6. preguntarme si cada test PODRÍA fallar.
 
 # ----------------------------------------------------------
-# 5.3 CHECKLIST ANTES DE PEDIR AYUDA
+# 5.3 UN EXPERIMENTO DE PROMPT
+# ----------------------------------------------------------
+# 1. Anotar el baseline ANTES de tocar nada.
+# 2. Correr dos veces sin cambios -> ese es el ruido, mi umbral.
+# 3. UN cambio por vez.
+# 4. Re-correr sobre el set chico (20), no sobre los 200.
+# 5. Anotar: qué cambié, qué pasó, si está arriba o abajo del ruido.
+# 6. Leer los desacuerdos nuevos. ¿Cambiaron de dirección o solo de cantidad?
+
+# ----------------------------------------------------------
+# 5.4 CHECKLIST ANTES DE PEDIR AYUDA
 # ----------------------------------------------------------
 # [ ] ¿Guardé? (⌘+S — bolita ● -> X)
 # [ ] ¿Corrí el código, o solo lo escribí?
 # [ ] ¿Verifiqué en el REPL los métodos que usé?
 # [ ] ¿Estoy en la carpeta correcta? ¿Está el (.venv)?
-# [ ] ¿Uso la variable de ESTA vuelta del loop, o la de afuera?
+# [ ] ¿Imprimí la variable antes de usarla? ¿Sé qué hay adentro?
 # [ ] ¿Hay alguna línea que calcula algo y no lo guarda?
 # [ ] ¿El acumulador/bandera nace AFUERA del loop?
 # [ ] ¿Lo que se decide una vez está afuera del loop?
 # [ ] ¿La línea que puede romper está ADENTRO del try?
 # [ ] ¿La indentación empareja los if/else y los loops como quiero?
 # [ ] ¿Cada función DEVUELVE, o solo imprime?
-# [ ] ¿La función se hace cargo de normalizar su propio input?
+# [ ] ¿La función normaliza su propio input?
 # [ ] ¿Normalicé los dos lados de la comparación?
-# [ ] ¿Estoy comparando la misma escala y el mismo TIPO?
+# [ ] ¿Misma escala y mismo TIPO?
 # [ ] ¿Validé los DOS extremos del rango?
-# [ ] ¿Probé con más de un caso, incluyendo uno "feo"?
+# [ ] ¿El nombre del archivo de salida es el que quiero pisar?
 
 # ----------------------------------------------------------
-# 5.4 SI ME TRABO (en este orden)
+# 5.5 SI ME TRABO (en este orden)
 # ----------------------------------------------------------
 # 0-5 min    Leer el error ENTERO, de abajo hacia arriba.
 # 5-15 min   print() de las variables justo antes de la línea que falla.
@@ -1273,16 +1237,17 @@
 #            y decime en qué línea mirar".
 # NUNCA      Copiar y pegar algo que no entiendo.
 #
-# SI SE ENREDA FEO — el método que funcionó:
+# SI SE ENREDA FEO — el método que funcionó siempre:
 #   Borrar todo y volver a DOS líneas. Correr. Verificar.
 #   Agregar UNA línea. Correr. Verificar.
 #
-# Y SI ESTOY QUEMADO: cerrar el día. Commitear aunque esté a medias.
-# Un loop mal escrito a las 11 de la noche sale en cinco minutos
-# al día siguiente.
+# Y si el bloqueo es "no sé qué escribir", casi siempre el problema real
+# es "no sé qué tengo". Imprimir las variables destraba más que pensar.
+#
+# SI ESTOY QUEMADO: cerrar el día. Commitear aunque esté a medias.
 
 # ----------------------------------------------------------
-# 5.5 CERRAR EL DÍA
+# 5.6 CERRAR EL DÍA
 # ----------------------------------------------------------
 #   cd ~/ai-plan
 #   git status            <- que NO aparezcan .env ni .venv
@@ -1291,30 +1256,35 @@
 #   git push
 #
 # Aunque esté roto o incompleto. Regla del plan.
-#
 # La guía se actualiza UNA VEZ POR SEMANA, los viernes.
 
 # ----------------------------------------------------------
-# 5.6 CIERRE DEL BLOQUE DE PYTHON
+# 5.7 CIERRE DEL MES 1 (2-oct-2026)
 # ----------------------------------------------------------
-# CS50P terminado: Weeks 0 a 6, PS0 a PS6 entregados.
+# Pregunta del mes: ¿puedo automatizar una tarea real con un LLM
+# y PROBAR que funciona?  -> Sí, y tengo el número.
 #
-# Lo que sé hacer ahora y no sabía hace cuatro semanas:
-#   - separar un programa en funciones que reciben y devuelven
-#   - manejar errores en vez de que el programa explote
-#   - usar librerías de terceros y leer su documentación
-#   - pedirle datos a una API y navegar un JSON anidado
-#   - escribir tests que puedan fallar
-#   - leer y escribir archivos y CSVs
-#   - guardar secretos afuera del código
+# Lo construido en 4 semanas desde cero:
+#   - CS50P completo (PS0 a PS6)
+#   - Generador de 200 mensajes sintéticos con variedad controlada
+#   - Clasificador con salida estructurada (prefill + stop sequences)
+#   - Pipeline de 200 con try/except por fila -> CSV
+#   - Sistema de evaluación propio con ground truth de 20 filas
+#   - Tres experimentos de prompt medidos contra el ruido
+#   - Costo unitario medido: $0,00073 por mensaje
 #
-# De acá en adelante el cuello de botella deja de ser la sintaxis.
-# Esta guía pasa a ser referencia: se consulta cuando algo no anda,
-# no se estudia.
+# Resultado: ~18/20 category y sentiment, ~16-17/20 priority, ±1-2.
 #
-# Las partes que más van a seguir apareciendo:
-#   2.8 y 3.7   la función que recibe y devuelve  -> base de las evals
-#   2.13        diccionarios anidados             -> todo lo que devuelve un LLM
-#   2.19        APIs, requests y JSON             -> todo el mes 2
-#   2.14/2.15   try/except vs if                  -> cada llamada que puede fallar
-#   1.10        secretos                          -> cada API key nueva
+# LOS CUATRO CONCEPTOS QUE ME LLEVO:
+#   1. Medir el ruido antes de medir la mejora
+#   2. El modelo no falla, le falta mi información
+#   3. Un campo sin definir es un campo ruidoso
+#   4. Mi ground truth también se equivoca
+#
+# LO QUE MÁS VA A SEGUIR APARECIENDO:
+#   2.7 y 2.8   funciones con parámetros opcionales y testeables
+#   2.13        diccionarios anidados y como índice
+#   2.19        APIs, requests y JSON
+#   2.14/2.15   try/except vs if
+#   3.8 a 3.11  evals, ruido, costo
+#   1.7         secretos

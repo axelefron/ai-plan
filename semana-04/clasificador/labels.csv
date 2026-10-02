@@ -1,0 +1,21 @@
+text,category,sentiment,priority
+I cannot find my debit card ending in 7823 anywhere. Do I need to open a completely new account or can you just send me another card to the same account?,lost_stolen_card,neutral,high
+I believe my card ending in 3345 was stolen at the university dining hall. There are no fraudulent charges yet that I can see. Should I still file a report?,lost_stolen_card,neutral,high
+stole card ending in 3388. I am in Orlando visiting family. no idea where it went. help,lost_stolen_card,neutral,high
+"I had to cancel and re-setup my autopay for my mortgage, car payment, and HOA fee because of the new card. This process is outdated and frustrating.",general_inquiry,negative,low
+Card ending in 1456 - I called to say it was stolen and within an hour my whole account got locked. Can you explain why? And how do I unlock it?,lost_stolen_card,neutral,high
+just told u my card got stolen and now ur system wont let me in. this is ridiculous,lost_stolen_card,negative,high
+"My husband ordered an expedited replacement and I'm seeing a $18 charge but he said he paid $14 last year, did the price go up",charge_dispute,neutral,medium
+My card ending in 9341 went missing at the campus rec center. I'm a student and I don't have much money so I'm really stressed about this. Can you help?,lost_stolen_card,negative,high
+"New card arrived but now Amazon, Hulu, DoorDash, insurance all rejected. Why cant the card company just update this automatically with merchants?",general_inquiry,negative,medium
+lost the card ending in 9182 at the mall food court yesterday afternoon do i need to file police report or something,lost_stolen_card,neutral,high
+Reactivate account please.,account_reactivation,neutral,medium
+"Someone stole my card ending in 8934 at the food court in the shopping center. I already saw a charge for $47.99 that I didn't make. What do I do??",lost_stolen_card,negative,high
+"Lost card ending in 2206 at the food court in the shopping mall. I am very calm about this situation. Please cancel it and send me a new one to my address on file. Thank you.",lost_stolen_card,neutral,high
+"why am i being charged $25 for a replacement card??? i didnt lose it i just want a new one",charge_dispute,negative,medium
+"I reported my card stolen this morning and now I can't log into my account at all. What's going on??? I need access to check my balance",lost_stolen_card,negative,high
+"Why did u close my account?? I never asked for that and now I can't access anything",account_locked,negative,high
+"Do I need to manually update my subscriptions when you send me a new card or does it happen automatically??? This is so confusing",general_inquiry,neutral,low
+"I think someone might have my card but I'm not 100% sure, like it could just be lost at the gym. Should I cancel it anyway or wait?",lost_stolen_card,neutral,high
+"The card ending in 6159 got stolen last week and I filed a dispute but now I'm wondering - when you send me the replacement, does it have to be a completely new number or can I request to keep it the same?",lost_stolen_card,neutral,high
+"Can you push a software update to automatically transfer recurring charges to new card numbers like other financial institutions do? This manual process is ridiculous.",general_inquiry,negative,low
