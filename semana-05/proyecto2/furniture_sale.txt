@@ -1,0 +1,42 @@
+========================================
+     FURNITURE SALE - 25% OFF!
+========================================
+
+PROMOTION SUMMARY:
+We are excited to announce a special 25% discount on all furniture items in our inventory! 
+This limited-time offer applies to our premium office furniture collection, helping you 
+create the perfect workspace at an unbeatable price.
+
+========================================
+     DISCOUNTED ITEMS DETAILS
+========================================
+
+Item 1: Silla Gamer Herman Miller (ID: 5)
+   Stock Available: 3 units
+   Original Price:  $1,500.00
+   Discount (25%):  -$375.00
+   Final Price:     $1,125.00
+   ────────────────────────────
+
+Item 2: Escritorio Standing (ID: 6)
+   Stock Available: 2 units
+   Original Price:  $600.00
+   Discount (25%):  -$150.00
+   Final Price:     $450.00
+   ────────────────────────────
+
+========================================
+          SALE SUMMARY
+========================================
+
+Total Items in Promotion: 2
+Combined Original Price:  $2,100.00
+Total Discount Amount:    -$525.00
+Combined Final Price:     $1,575.00
+
+TOTAL SAVINGS: $525.00
+
+========================================
+
+Don't miss this opportunity to upgrade your office furniture at 25% off!
+Offer valid while supplies last.

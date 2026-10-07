@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from anthropic import Anthropic
-import json
 import requests
 import os
 from datetime import datetime, timedelta
@@ -313,7 +312,7 @@ if __name__ == "__main__":
     messages = []
 
     while True:
-        user_input = input("Plan your weekend in Miami (or 'exit' to quit): ")
+        user_input = input("Plan your weekend in Miami (or type 'exit' to quit): ")
 
         if user_input.lower() == "exit":
             print("\n✓ Agent finished")
