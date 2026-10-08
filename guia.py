@@ -1,13 +1,14 @@
 # ==========================================================
 #  GUÍA PERSONAL — Axel · MacBook Air (macOS, zsh)
-#  Actualizada al CERRAR EL MES 1 (2-oct-2026).
-#  CS50P completo + primer proyecto con la API de Claude + evals.
+#  Actualizada al CERRAR LA SEMANA 5 (8-oct-2026).
+#  CS50P completo + API de Claude + evals + TOOLS + error handling.
 #
 #  PARTE 1 · ENTORNO     terminal, git, venv, secretos
 #  PARTE 2 · PYTHON      referencia por concepto
 #  PARTE 3 · PATRONES    las formas que se repiten
 #  PARTE 4 · MIS ERRORES agrupados por familia + qué significa cada traceback
 #  PARTE 5 · RUTINA      cómo encaro algo y cómo cierro el día
+#  PARTE 6 · TOOLS       schemas, tool use cycle, multi-tool, encadenamiento
 #
 #  La PARTE 2 se consulta cuando no me acuerdo cómo se escribe algo.
 #  La PARTE 4 se consulta cuando algo no anda. Son momentos distintos.
@@ -1288,3 +1289,477 @@
 #   2.14/2.15   try/except vs if
 #   3.8 a 3.11  evals, ruido, costo
 #   1.7         secretos
+
+# ----------------------------------------------------------
+# 5.8 SEMANA 5 (8-oct-2026) — TOOLS, ENCADENAMIENTO, ERROR HANDLING
+# ----------------------------------------------------------
+# Pregunta de la semana: ¿cómo hace Claude para usar herramientas y
+# encadenarlas sin que yo haga cada paso?
+#
+# Lo construido en 3 días (Días 13-15):
+#   - Agente mínimo con 1 tool (addition)
+#   - Agente multi-tool con historial persistente (3 APIs reales)
+#   - Agente con encadenamiento automático (search → calculate → save)
+#   - Error handling transparente (fallas → Claude decide qué hacer)
+#   - Logging detallado por turno y por tool call
+#   - Video de demostración (2 min, 3 escenarios)
+#   - README.md + commits + posts en redes
+#
+# Resultado: 3 tools ejecutadas correctamente, 0 crashes, Claude razona
+# qué necesita y ejecuta sin intervención humana.
+#
+# CONCEPTOS CLAVE APRENDIDOS:
+#   1. El schema JSON NO es estético: es un guardrail. El enum define
+#      qué Claude PUEDE hacer.
+#   2. El historial (messages = [] persistente) es lo que permite
+#      planning entre turnos.
+#   3. Error handling VA DENTRO del for tool_uses (no en __main__).
+#      Claude recibe el error como tool_result, no como crash.
+#   4. El logging = observabilidad. Sin logs, no sé qué ejecutó ni por qué.
+#
+# ESTADÍSTICAS:
+#   - Líneas de código: ~350
+#   - Tokens totales: ~5,100
+#   - Costo estimado: ~$0.008
+#   - Files pusheados: 1 video + código + README
+#
+# LO QUE SIGUE:
+#   Semana 6 abre el segundo mes: "¿Cómo le doy al agente acceso a más datos?"
+#   - RAG (Retrieval Augmented Generation): buscar en documentos
+#   - Memory: estado persistente entre sesiones
+#   - MCP (Model Context Protocol): servidores que ofrecen tools
+
+
+# ##########################################################
+#  PARTE 6 · TOOLS — SCHEMAS, CICLOS, ENCADENAMIENTO
+# ##########################################################
+
+# ----------------------------------------------------------
+# 6.1 EL SCHEMA JSON (GUARDRAIL, NO ESTÉTICA)
+# ----------------------------------------------------------
+# Una tool es una función que Claude puede DECIDIR ejecutar si la necesita.
+# El schema es la ESPECIFICACIÓN: qué parámetros acepta, de qué tipo,
+# cuáles son obligatorios.
+#
+# tools = [
+#   {
+#     "name": "search_in_csv",
+#     "description": "Search products by category or price",
+#     "input_schema": {
+#       "type": "object",
+#       "properties": {
+#         "criteria": {
+#           "type": "string",
+#           "enum": ["electronics", "peripherals", "furniture", "price_high", "price_low"]
+#         },
+#         "quantity": {
+#           "type": "integer",
+#           "description": "Number of items to return"
+#         }
+#       },
+#       "required": ["criteria", "quantity"]
+#     }
+#   }
+# ]
+#
+# EL SCHEMA OBLIGA A CLAUDE A CUMPLIR:
+#   - criteria tiene que ser UNO de los valores del enum
+#   - quantity tiene que ser un número entero, no un string
+#   - Los dos parámetros son obligatorios, no puede faltar ninguno
+#
+# SI NO ESPECIFICO:
+#   - Claude prueba criterios que no existen (tipo "books")
+#   - Manda parámetros como strings cuando son números
+#   - La función explota en tiempo de ejecución
+#
+# El enum es la herramienta más efectiva: NO necesito un if/elif adentro
+# de la función para validar. Claude ve que tiene 5 opciones, elige una.
+
+# ----------------------------------------------------------
+# 6.2 EL CICLO TOOL USE (5 FASES)
+# ----------------------------------------------------------
+# Fase 1: USER INPUT + TOOLS
+#   user_input = "Find 2 electronics and apply 10% discount"
+#   messages.append({"role": "user", "content": user_input})
+#   response = client.messages.create(
+#       model="claude-3-5-sonnet-20241022",
+#       max_tokens=1024,
+#       tools=tools,      <- ← le digo cuáles tools tiene disponibles
+#       messages=messages
+#   )
+#
+# Fase 2: CLAUDE DECIDE USAR UNA TOOL
+#   response.stop_reason == "tool_use"
+#   Claude devolvió un bloque de content con type == "tool_use"
+#   Contiene: .name (qué tool), .id (qué llamada), .input (qué parámetros)
+#
+# Fase 3: YO EJECUTO LA TOOL
+#   tool_uses = [block for block in response.content if block.type == "tool_use"]
+#   for tool_use in tool_uses:
+#       resultado = execute_tool(tool_use.name, tool_use.input)
+#       tool_results.append({
+#           "type": "tool_result",
+#           "tool_use_id": tool_use.id,  <- ← le vuelvo a mandar el ID
+#           "content": resultado
+#       })
+#
+# Fase 4: VUELVO A MANDAR EL CONTEXTO COMPLETO
+#   messages.append({"role": "assistant", "content": response.content})
+#   messages.append({"role": "user", "content": tool_results})
+#   <- ahora messages tiene: mi pregunta + lo que Claude quiso hacer + el resultado
+#
+# Fase 5: CLAUDE DECIDÉ QUÉ HACER CON EL RESULTADO
+#   response = client.messages.create(model=..., messages=messages, tools=tools)
+#   Si necesita OTRA tool: vuelvo a Fase 3.
+#   Si termina: response.stop_reason == "end_turn" → devuelve la respuesta final
+#
+# PUNTO CRÍTICO: El historial (messages) crece y se re-envía CADA VEZ.
+# Claude ve TODO lo que pasó antes, por eso puede planificar multi-paso.
+
+# ----------------------------------------------------------
+# 6.3 MULTI-TOOL CON HISTORIAL PERSISTENTE
+# ----------------------------------------------------------
+# EL PATRÓN: messages = [] AFUERA del loop, se mantiene entre turnos
+#
+#   from anthropic import Anthropic
+#   client = Anthropic()
+#   messages = []
+#
+#   while True:
+#       user_input = input("You: ").strip()
+#       if user_input.lower() == "exit": break
+#
+#       messages.append({"role": "user", "content": user_input})
+#
+#       while True:  # <- inner loop: mientras haya tool calls
+#           response = client.messages.create(
+#               model="claude-3-5-sonnet-20241022",
+#               max_tokens=1024,
+#               tools=tools,
+#               messages=messages
+#           )
+#
+#           if response.stop_reason == "tool_use":
+#               tool_uses = [block for block in response.content
+#                            if block.type == "tool_use"]
+#               tool_results = []
+#
+#               messages.append({"role": "assistant", "content": response.content})
+#
+#               for tool_use in tool_uses:
+#                   result = execute_tool(tool_use.name, tool_use.input)
+#                   tool_results.append({
+#                       "type": "tool_result",
+#                       "tool_use_id": tool_use.id,
+#                       "content": result
+#                   })
+#
+#               messages.append({"role": "user", "content": tool_results})
+#
+#           else:  # stop_reason == "end_turn"
+#               final_response = next(
+#                   (block.text for block in response.content
+#                    if hasattr(block, "text")),
+#                   None
+#               )
+#               print(f"Claude: {final_response}\n")
+#               messages.append({"role": "assistant", "content": response.content})
+#               break  # <- salir del inner loop, volver a pedir input
+#
+# RESULTADO: La conversación PERSISTE. Turno 1 pregunto "plan Miami weekend".
+# Claude usa 3 tools. Turno 2 pregunto "add concerts", Claude RECUERDA el plan
+# anterior y agrega sin repetir lo que ya vio.
+
+# ----------------------------------------------------------
+# 6.4 ENCADENAMIENTO — UNA TOOL COMO INPUT DE LA SIGUIENTE
+# ----------------------------------------------------------
+# ESCENARIO: "Find electronics, apply 20% discount, save report"
+#
+# tools = [
+#   { "name": "search_in_csv", ... },
+#   { "name": "calculate_discount", ... },
+#   { "name": "save_report", ... }
+# ]
+#
+# def execute_tool(tool_name, tool_input):
+#     if tool_name == "search_in_csv":
+#         criteria = tool_input.get("criteria")
+#         quantity = tool_input.get("quantity")
+#         # -> devuelve string con "ID | Product | Price | Stock"
+#         return "ID: 1 | Laptop | $1200 | 5\nID: 2 | Monitor | $350 | 8"
+#
+#     elif tool_name == "calculate_discount":
+#         prices = tool_input.get("prices")  # <- estos números vinieron
+#         discount_percent = tool_input.get("discount_percent")
+#         # del resultado de search_in_csv que Claude parsó
+#         total = sum(prices)
+#         discount = total * (discount_percent / 100)
+#         final = total - discount
+#         return f"Original: ${total} | Discount: ${discount} | Final: ${final}"
+#
+#     elif tool_name == "save_report":
+#         filename = tool_input.get("filename")
+#         content = tool_input.get("content")
+#         with open(filename, "w") as f:
+#             f.write(content)
+#         return f"✓ Report saved to {filename}"
+#
+# FLUJO AUTOMÁTICO:
+#   Turno 1: Claude ve los 3 tools, piensa "necesito buscar primero"
+#   -> ejecuta search_in_csv -> obtiene [1200, 350]
+#
+#   Turno 2: Claude ve el resultado de search, decide calcular descuento
+#   -> ejecuta calculate_discount([1200, 350], 20) -> obtiene totales
+#
+#   Turno 3: Claude ve los dos resultados, formatea un reporte
+#   -> ejecuta save_report(filename, formatted_text) -> archivo creado
+#
+#   Turno 4: Claude ve que todas las tools se ejecutaron exitosamente
+#   -> devuelve respuesta final en lenguaje natural
+#
+# YO NO ESCRIBO LOS PASOS. Claude decide el orden y qué parametrizar.
+# PERO: system prompt importa. "Always save the final report without asking"
+# fuerza que no se quede a mitad de camino.
+
+# ----------------------------------------------------------
+# 6.5 ERROR HANDLING — TRY/EXCEPT DENTRO DEL FOR TOOL_USES
+# ----------------------------------------------------------
+# REGLA DE ORO: El try/except va DENTRO del for que recorre tool_uses,
+# no en __main__. Esto permite que Claude VEA el error como tool_result
+# y decida qué hacer, en vez de crashear.
+#
+#   for tool_use in tool_uses:
+#       try:
+#           result = execute_tool(tool_use.name, tool_use.input)
+#           is_error = False
+#       except Exception as e:
+#           result = f"Tool failed: ❌ {str(e)}"
+#           is_error = True
+#
+#       tool_results.append({
+#           "type": "tool_result",
+#           "tool_use_id": tool_use.id,
+#           "content": result
+#       })
+#
+#       log.append({
+#           "tool_name": tool_use.name,
+#           "tool_input": tool_use.input,
+#           "tool_result": result,
+#           "is_error": is_error
+#       })
+#
+# TRES ESCENARIOS Y CÓMO LOS MANEJA CLAUDE:
+#
+# 1. FALLA TOTAL (ValueError en search_in_csv):
+#    Claude recibe: "Tool failed: ❌ Database connection lost while searching"
+#    Claude decide: "Puedo reportar el error sin inventar datos"
+#    -> respuesta: "Unfortunately, the search failed. I cannot proceed."
+#    ✓ CORRECTO: no inventó productos
+#
+# 2. RESULTADO VACÍO (search devuelve ""):
+#    Claude recibe: "" (no es un error, solo sin datos)
+#    Claude decide: "Si no hay productos, guardo un reporte explicando"
+#    -> ejecuta save_report con contenido "No products found"
+#    ✓ CORRECTO: documentó lo que pasó
+#
+# 3. LATENCIA (3 tools tardan 3 segundos):
+#    Los tres execute_tool() se disparan, devuelven en el tiempo normal
+#    Claude recibe todos los resultados, formatea el reporte final
+#    ✓ CORRECTO: no hay problema de timing
+
+# ----------------------------------------------------------
+# 6.6 LOGGING — OBSERVABILIDAD POR TURNO Y POR TOOL CALL
+# ----------------------------------------------------------
+# Sin logs, no sé:
+#   - qué tools ejecuté
+#   - en qué orden
+#   - cuáles fallaron
+#   - cuántos tokens gasté
+#
+# EL PATRÓN:
+#
+#   log = []  # global
+#
+#   def run_agent(user_message, system_prompt):
+#       messages = []
+#       turn_num = 0
+#       execution_log = {
+#           "turns": [],
+#           "total_input_tokens": 0,
+#           "total_output_tokens": 0
+#       }
+#
+#       messages.append({"role": "user", "content": user_message})
+#
+#       while True:
+#           turn_num += 1
+#           response = client.messages.create(
+#               model="claude-3-5-sonnet-20241022",
+#               max_tokens=1024,
+#               system=system_prompt,
+#               tools=tools,
+#               messages=messages
+#           )
+#
+#           # CONTAR TOKENS DE ESTE TURNO
+#           execution_log["total_input_tokens"] += response.usage.input_tokens
+#           execution_log["total_output_tokens"] += response.usage.output_tokens
+#
+#           if response.stop_reason == "tool_use":
+#               tool_uses = [...]
+#               messages.append({"role": "assistant", "content": response.content})
+#
+#               for tool_use in tool_uses:
+#                   try:
+#                       result = execute_tool(tool_use.name, tool_use.input)
+#                       is_error = False
+#                   except Exception as e:
+#                       result = f"Tool failed: {str(e)}"
+#                       is_error = True
+#
+#                   # LOG CADA TOOL CALL
+#                   execution_log["turns"].append({
+#                       "turn": turn_num,
+#                       "tool_name": tool_use.name,
+#                       "tool_input": tool_use.input,
+#                       "tool_result": result,
+#                       "is_error": is_error,
+#                       "input_tokens": response.usage.input_tokens,
+#                       "output_tokens": response.usage.output_tokens
+#                   })
+#
+#                   tool_results.append({...})
+#
+#               messages.append({"role": "user", "content": tool_results})
+#
+#           else:  # "end_turn"
+#               final_response = next(...).text
+#
+#               # LOG LA FINALIZACIÓN
+#               execution_log["turns"].append({
+#                   "turn": turn_num,
+#                   "event": "agent_complete",
+#                   "final_response": final_response,
+#                   "input_tokens": response.usage.input_tokens,
+#                   "output_tokens": response.usage.output_tokens
+#               })
+#
+#               log.append(execution_log)
+#               return final_response
+#
+# AL FINAL, IMPRIMO UN RESUMEN:
+#   print("=== TOKEN USAGE ===")
+#   print(f"Total: {execution_log['total_input_tokens']} in + "
+#         f"{execution_log['total_output_tokens']} out")
+#
+# ESTO TE DICE:
+#   - Cuántas vueltas tuvo que dar Claude
+#   - Qué tools ejecutó
+#   - Cuáles fallaron y cómo
+#   - El costo exacto
+
+# ----------------------------------------------------------
+# 6.7 ERRORES COMUNES CON TOOLS
+# ----------------------------------------------------------
+#
+# ===== K · TOOLS ===================================
+# K1. El schema no es suficientemente restrictivo.
+#     properties con type: "string" pero sin enum -> Claude inventa valores
+#     -> Solución: enum["electronics", "peripherals", "furniture"]
+#
+# K2. try/except en __main__ en vez de dentro del for tool_uses.
+#     El programa revienta, Claude nunca ve el error como tool_result
+#     -> Solución: except DENTRO del for, devuelve mensaje "Tool failed: ..."
+#
+# K3. No loggear dentro del loop.
+#     Al final no sé qué ejecutó, cuándo, ni por qué
+#     -> Solución: append al log DENTRO del for tool_uses
+#
+# K4. No guardar el objeto response completo: "return message.content[0].text"
+#     Pierde .usage con los tokens, no puedo medir costo
+#     -> Solución: Pasar el objeto entero, extraer .text Y .usage.input_tokens
+#
+# K5. Cambiar messages AFUERA del while True.
+#     El historial se pierde entre preguntas
+#     -> Solución: messages = [] ANTES del while, se mantiene durante toda
+#        la sesión de usuario
+#
+# K6. Parámetros opcionales sin validar.
+#     API de Claude no acepta None -> TypeError
+#     -> Solución: if sistema not in None: params["system"] = sistema
+#        (ver 2.7 PARÁMETROS OPCIONALES)
+#
+# K7. Asumir que el JSON es válido sin parsear.
+#     El modelo cortó la respuesta a max_tokens o agregó texto
+#     -> json.JSONDecodeError -> Solución: try/except alrededor de .json()
+
+# ----------------------------------------------------------
+# 6.8 LOS PATRONES QUE SE REPITEN EN TOOLS
+# ----------------------------------------------------------
+#
+# PATRÓN 1: VALIDACIÓN ANTES DE LA HERRAMIENTA (schema)
+#   El enum es el validador. No necesito if/elif adentro de execute_tool.
+#   properties con "required": ["X", "Y"] previene parametros faltantes.
+#
+# PATRÓN 2: HISTORIAL = PLANNING
+#   messages = [] persistente permite que Claude razone multi-turno.
+#   Sin historial, cada turno es independiente.
+#
+# PATRÓN 3: ENCADENAMIENTO AUTOMÁTICO
+#   No escribo "luego hace esto". Claude ve el resultado de una tool
+#   y decide si necesita otra. El system prompt guía ("Always save...").
+#
+# PATRÓN 4: ERROR HANDLING TRANSPARENTE
+#   try/except DENTRO del loop, devuelvo "Tool failed: ..." como tool_result.
+#   Claude ve el error y elige: reintentar, reportar, o actuar diferente.
+#
+# PATRÓN 5: LOGGING = OBSERVABILIDAD
+#   Cada tool_use genera un entry con turn, tool_name, input, result, is_error.
+#   Al final, puedo responder "¿qué pasó?" con datos.
+
+# ----------------------------------------------------------
+# 6.9 CÓMO ESTUDIAR TOOLS
+# ----------------------------------------------------------
+#
+# DÍA 13: Agente MÍNIMO.
+#   1 tool, 1 parámetro. Ver cómo Claude decide "necesito esta tool".
+#   Código: simple_tool_agent.py
+#
+# DÍA 14 A: Multi-tool CON HISTORIAL.
+#   3 tools reales (APIs externas). Turno 1 ejecuta 14 tool_uses,
+#   turno 2 Claude recuerda y ajusta. Punto: historial.
+#   Código: agent_with_tools.py
+#
+# DÍA 14 B: Encadenamiento.
+#   search -> calculate -> save. Sin intervención. Punto: orden automático.
+#   Código: agent_chained_tasks.py
+#
+# DÍA 15 A: Error handling.
+#   3 escenarios: falla, vacío, éxito. Punto: Claude no inventa datos.
+#   Código: agent_error_handling.py + logging.
+#
+# DÍA 15 B: Observabilidad.
+#   Video, README, logging detallado. Punto: puedo ver qué hizo.
+#
+# EJERCICIO PROPIO (para consolidar):
+#   Agente con 2-3 tools nuevas. Un scenario real (tu trabajo, un hobby).
+#   El punto es que sea tool_use, no que sea complejo. Empezá pequeño.
+
+# ----------------------------------------------------------
+# 6.10 PRÓXIMA SEMANA (6): RAG, MEMORY, MCP
+# ----------------------------------------------------------
+# Week 6 abre el segundo mes: "¿Cómo le doy al agente acceso a más datos?"
+#
+# RAG = Retrieval Augmented Generation
+#   El agente no memoriza: BUSCA en documentos cuando lo necesita.
+#   Tool = vector search. Schema = qué buscar.
+#
+# Memory = Estado persistente
+#   Tools que guardan datos, tools que leen. Entre sesiones.
+#
+# MCP = Model Context Protocol
+#   Servidores que ofrecen tools. El agente elige cuál usar.
+#
+# El ciclo tool_use que viste en Semana 5 es la COLUMNA VERTEBRAL.
+# Semana 6 solo agrega herramientas nuevas al mismo ciclo.
