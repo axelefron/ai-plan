@@ -1,6 +1,14 @@
 from pypdf import PdfReader
 from pathlib import Path
 import chromadb
+from chromadb.errors import NotFoundError
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+
+EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+def get_embedding_function():
+    """Return the embedding function used by ingestion AND chatbot."""
+    return SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL)
  
 # Load PDFs
 def load_pdfs(docs_folder="docs"):
@@ -21,7 +29,7 @@ def load_pdfs(docs_folder="docs"):
  
             # extract text from all pages
             for page in reader.pages:
-                text += page.extract_text() + "\n"
+                text += (page.extract_text() or "") + "\n"
  
             # clean up text
             text = text.strip()
@@ -43,44 +51,58 @@ def load_pdfs(docs_folder="docs"):
  
     print(f"\nSuccessfully loaded: {len(documents)} documents\n")
     return documents
- 
- 
-def create_chunks(documents, chunk_size=512, overlap=128):
-    """Split documents into chunks with overlap for better context preservation."""
+
+def clean_text(text):
+    """Remove repetitive headers and footers from PDF text."""
+    cleaned_lines = []
+
+    for line in text.splitlines():
+        line = line.strip()
+
+        if not line:
+            continue
+
+        if "Banco Financiero | Documento Oficial" in line:
+            continue
+
+        if "Este documento es confidencial" in line:
+            continue
+
+        cleaned_lines.append(line)
+
+    return "\n".join(cleaned_lines) 
+
+
+def create_chunks(documents):
+    """Create one enriched chunk per PDF."""
     chunks = []
-    chunk_id = 0
- 
+
     print("Creating chunks...")
- 
-    for doc in documents:
-        content = doc["content"]
+
+    for idx, doc in enumerate(documents):
+        content = clean_text(doc["content"])
         source = doc["source"]
         title = doc["title"]
- 
-        # Split content into chunks with overlap
-        start = 0
-        while start < len(content):
-            end = min(start + chunk_size, len(content))
-            chunk_text = content[start:end].strip()
- 
-            # Skip very small chunks (noise)
-            if len(chunk_text) >= 50:
-                chunk = {
-                    "id": f"chunk_{chunk_id:04d}",
-                    "content": chunk_text,
-                    "source": source,
-                    "title": title,
-                    "char_count": len(chunk_text)
-                }
-                chunks.append(chunk)
-                chunk_id += 1
- 
-            # Move forward with overlap
-            start += (chunk_size - overlap)
- 
+
+        # Add document title to improve semantic context
+        enriched_content = f"Tema: {title.replace('_', ' ')}\n\nContenido:\n{content}"
+
+        if len(content.strip()) >= 50:
+            chunk = {
+                "id": f"chunk_{idx:04d}",
+                "content": enriched_content,
+                "source": source,
+                "title": title,
+                "char_count": len(enriched_content),
+                "part": 0
+            }
+
+            chunks.append(chunk)
+
     print(f"Created {len(chunks)} chunks\n")
     return chunks
- 
+
+
  
 def create_rag_database(chunks, db_path="./rag_db"):
     """Initialize Chroma vector database and add chunks with embeddings."""
@@ -91,10 +113,17 @@ def create_rag_database(chunks, db_path="./rag_db"):
  
     # Initialize Chroma client with persistent storage (NEW API)
     client = chromadb.PersistentClient(path=db_path)
+    embedding_function = get_embedding_function()
  
     # Create or get collection
+    try:
+        client.delete_collection(name="banking_docs")
+    except NotFoundError:
+        pass
+
     collection = client.get_or_create_collection(
         name="banking_docs",
+        embedding_function=embedding_function,
         metadata={"hnsw:space": "cosine"}
     )
  
@@ -111,7 +140,8 @@ def create_rag_database(chunks, db_path="./rag_db"):
         metadatas.append({
             "source": chunk["source"],
             "title": chunk["title"],
-            "char_count": str(chunk["char_count"])
+            "char_count": str(chunk["char_count"]),
+            "part": chunk["part"]
         })
  
     # Add all chunks at once
@@ -176,7 +206,7 @@ if __name__ == "__main__":
             exit(1)
  
         # Step 2: Create chunks
-        chunks = create_chunks(documents, chunk_size=512, overlap=128)
+        chunks = create_chunks(documents)
  
         if not chunks:
             print("❌ No chunks created. Exiting.")
@@ -187,14 +217,14 @@ if __name__ == "__main__":
  
         # Step 4: Test with banking-specific queries
         test_queries = [
-            "What is my credit limit and how does it work?",
-            "What is the maximum liability in case of fraud?",
-            "How are interest rates calculated on my account?",
-            "What are my rights regarding disputed transactions?",
-            "How do I protect my account from identity theft?",
-            "What fees apply to my account?",
-            "How do I consolidate my debt?",
-            "What is a balance transfer and when should I use it?"
+            "¿Qué es mi límite de crédito y cómo funciona?",
+            "¿Cuál es la responsabilidad máxima en caso de fraude?",
+            "¿Cómo se calculan los intereses de mi cuenta?",
+            "¿Cuáles son mis derechos sobre transacciones disputadas?",
+            "¿Cómo protejo mi cuenta del robo de identidad?",
+            "¿Qué cargos se aplican a mi cuenta?",
+            "¿Cómo consolido mi deuda?",
+            "¿Qué es una transferencia de saldo y cuándo debo usarla?"
         ]
  
         print("\n" + "=" * 80)
