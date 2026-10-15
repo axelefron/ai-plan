@@ -24,11 +24,8 @@ def build_context(results):
     
     return ("\n\n".join(parts))
 
-# ask question
-def as_question(question):
-    results = search(collection, question, top_k=3)
-    context = build_context(results)
-    system_prompt = """
+
+PROMPT_V2 = """
     Eres un agente de IA profesional especializado en información bancaria y financiera.
     Responde exclusivamente utilizando la información proporcionada en <context>.
 
@@ -68,6 +65,21 @@ def as_question(question):
     - Prioriza siempre la precisión y las fuentes por encima de completar una respuesta.
     """
 
+PROMPT_V3 = PROMPT_V2 + """
+
+REGLA DE RELEVANCIA:
+- Antes de responder, verifica que cada dato encontrado responda directamente a la pregunta específica del usuario.
+- No utilices información que, aunque sea verdadera y esté respaldada por los documentos, no responda a lo solicitado.
+- Si el contexto contiene información relacionada con el tema, pero no el dato específico solicitado, responde exactamente: "La información solicitada no está disponible en los documentos consultados."
+- Prioriza reconocer la falta de información antes que proporcionar una respuesta irrelevante.
+"""
+
+# ask question
+
+def ask_question(question, system_prompt=PROMPT_V2):
+    results = search(collection, question, top_k=3)
+    context = build_context(results)
+
     user_message = f"<context>\n{context}\n</context>\n\n<question>{question}</question>"
 
     response = claude.messages.create(
@@ -91,5 +103,5 @@ if __name__ == "__main__":
         print()
         if question.lower() == "exit": break
         if not question: continue
-        try: print(as_question(question))
+        try: print(ask_question(question))
         except Exception as e: print(f"Error: {e}")

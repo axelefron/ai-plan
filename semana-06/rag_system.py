@@ -73,10 +73,14 @@ def clean_text(text):
     return "\n".join(cleaned_lines) 
 
 
-def create_chunks(documents):
-    """Create one enriched chunk per PDF."""
+def create_chunks(documents, chunk_size=None, overlap=100):
+    """Create enriched chunks, optionally splitting documents with overlap."""
     chunks = []
 
+    if chunk_size is not None:
+        if chunk_size  <= 0 or not 0 <= overlap < chunk_size:
+            raise ValueError("Invalid chunk_size or overlap")
+   
     print("Creating chunks...")
 
     for idx, doc in enumerate(documents):
@@ -84,17 +88,40 @@ def create_chunks(documents):
         source = doc["source"]
         title = doc["title"]
 
-        # Add document title to improve semantic context
-        enriched_content = f"Tema: {title.replace('_', ' ')}\n\nContenido:\n{content}"
+        # Split document into pieces, or keep it as a whole
 
-        if len(content.strip()) >= 50:
+        if chunk_size is None:
+            pieces = [content]
+        else:
+            step = chunk_size - overlap
+            pieces =  []
+
+            for start in range(0, len(content), step):
+                piece = content[start:start + chunk_size]
+
+                if piece:
+                    pieces.append(piece)
+
+                if start + chunk_size >= len(content):
+                    break
+
+        # Enrich each piece with the document title
+        for part, piece in enumerate(pieces):
+            if len(piece.strip()) < 50:
+                continue
+            
+            enriched_content = (
+                f"Tema: {title.replace('_',' ')}\n\n"
+                f"Contenido:\n{piece}"
+            )
+
             chunk = {
-                "id": f"chunk_{idx:04d}",
+                "id": f"chunk_{idx:04d}_{part:03d}",
                 "content": enriched_content,
                 "source": source,
                 "title": title,
                 "char_count": len(enriched_content),
-                "part": 0
+                "part": part
             }
 
             chunks.append(chunk)
@@ -103,7 +130,6 @@ def create_chunks(documents):
     return chunks
 
 
- 
 def create_rag_database(chunks, db_path="./rag_db"):
     """Initialize Chroma vector database and add chunks with embeddings."""
     print("Initializing vector database...")
@@ -206,14 +232,14 @@ if __name__ == "__main__":
             exit(1)
  
         # Step 2: Create chunks
-        chunks = create_chunks(documents)
+        chunks = create_chunks(documents, chunk_size=500, overlap=100)
  
         if not chunks:
             print("❌ No chunks created. Exiting.")
             exit(1)
  
         # Step 3: Create vector database
-        collection = create_rag_database(chunks, db_path="./rag_db")
+        collection = create_rag_database(chunks, db_path="./rag_db_c500")
  
         # Step 4: Test with banking-specific queries
         test_queries = [

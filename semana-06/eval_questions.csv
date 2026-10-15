@@ -1,0 +1,16 @@
+question_id,question,gold_doc,gold_fact
+1,"Con un score de 700, ¿dentro de qué categoría estoy y entre qué montos?",01_política_de_límites_de_crédito,"Categoría B; $2,000 a $5,000"
+2,¿Cuánto me cobra el banco de cargo por hacer un adelanto de efectivo con la tarjeta?,02_tasas_de_interés_y_cargos,3%
+3,¿Qué mide el sistema para detectar fraude?,03_detección_de_fraude,"Patrones de gasto, geolocalización, velocidad de transacciones"
+4,"Mientras investigan una disputa por fraude, ¿hasta cuánto dinero me acreditan de forma temporal?",04_procedimientos_de_disputa,"Hasta $5,000"
+5,¿En cuántos días tengo que avisar al banco si me roban la tarjeta?,05_responsabilidad_cliente_vs_banco,2 días
+6,"Si no pago nada durante 6 meses, ¿qué porcentaje de intereses se acumula sobre mi deuda?",06_cálculo_detallado_de_intereses,10.68%
+7,¿Qué rendimiento ofrecen los bonos de alto riesgo?,09_bonos_guía_completa,8-12%+
+8,"Si voy pidiendo aumentos de límite, ¿hasta cuánto puede llegar mi límite máximo en la categoría B?",11_aumentar_límite_estratégicamente,"$5,000-$15,000"
+9,¿Cuántos puntos de score pierdo si me atraso 90 días o más?,12_impacto_atrasos_en_score,-150 a -200 puntos
+10,"Si tengo 5 tarjetas con $1,000 cada una al 18% y las paso a un préstamo al 10%, ¿cuánto me ahorro por mes?",21_consolidación_de_deuda,$42 por mes
+11,¿Cuánto tarda en aprobarse un préstamo personal?,23_préstamos_personales,1-3 días
+12,¿Por cuántos años puedo usar el dinero de una línea de crédito antes de empezar a devolverlo?,24_línea_de_crédito,5-10 años
+13,¿Qué porcentaje del préstamo suelo pagar en total por costos de cierre de una hipoteca?,25_hipotecas:_introducción,2-5% del préstamo
+14,"Si me hackean la cuenta del banco, ¿por cuántos días debo seguir vigilándola?",26_banca_móvil_y_seguridad_digital,60+ días
+15,¿Cuánto tiempo toma congelar mi crédito?,27_protección_contra_fraude_de_identidad,10 minutos

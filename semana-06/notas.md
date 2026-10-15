@@ -209,5 +209,134 @@ Eres un agente de IA profesional. Responde solo con la información de <context>
 ### Cómo cambió entre borradores
 El texto corrido difiere del borrador revisado antes (REGLAS GENERALES / CASOS ESPECÍFICOS / PRIORIDADES). Se agregaron frases literales para los casos 3 y 4, se limitó a una oración, se prohibieron consejos y se ordenó la clasificación. Las dos revisiones de ese borrador se hicieron antes de correr. Esta versión no se revisó antes de correr.
 
+## criterio para medir RAG
+Retrieval: el gold_doc está entre los top_k. Se anota hit@1 y hit@3.
+Respuesta: gold_fact aparece y la cita es gold_doc. Es 0 o 1, sin parciales. La corregís a mano, porque con 15 preguntas es más fiable que comparar strings ($5,000 vs 5000).
+
+
 ### Predicciones
-No se registraron predicciones antes de correr. Los resultados (secciones 11 y 12) no se pueden comparar con una expectativa previa. Desde el día 18, escribir predicciones antes de cada corrida.
+Yo creo que va acertar 11/15 y va a citar 4 mal.
+
+### Real
+base: hit@1 6/15, hit@3 10/15, acierta 10, cita_mal 2, no_se 3.
+
+### Comparación predicción vs real
+Predije 11 aciertos y 4 citas mal (suma 15, o sea cero "no sé"). Real: 10 aciertos, 2 citas mal, 3 "no sé".
+- Acierta: error de 1 (11 vs 10).
+- Cita mal: predije 4, fueron 2. No citó mejor de lo que pensaba: 3 de los fallos se convirtieron en "no sé" porque el prompt v2 los frenó. No anticipé cómo iba a fallar el sistema.
+
+### Observación clave
+Las 10 preguntas donde el gold_doc llegó al top 3 las acertó todas; las 5 donde no llegó las falló todas (3 "no sé", 2 citas mal: Q1 y Q14). acierta = hit@3 = 10. El cuello de botella es el retrieval, no el prompt. El prompt v2 convierte fallos de retrieval en "no sé" en vez de inventar.
+
+Criterio fijado: si el bot da un dato real pero fuera de lugar (Q1: 75% de aprobación del doc 15; Q14: "2 días" del doc 05) cuenta como cita_mal, no como no_se.
+
+### Hipótesis para el Bloque B (escrita antes de correr)
+Las variables que más deberían mover el número son chunk size y top_k, porque atacan el retrieval. El system prompt probablemente mueva poco el acierto (ya hace su trabajo). A confirmar con los resultados reales.
+
+### Cierre Bloque A
+Entregable: eval_questions.csv (15 preguntas), eval_results_baseline.csv (calificado), línea base hit@1 6/15, hit@3 10/15, acierta 10, cita_mal 2, no_se 3.
+
+## Comienzo Bloque B
+
+# Predicciones Config 1:
+- Creo que el hit at 3 queda en 10
+- De las 5 que fallan, yo creo que al menos deberían recuperarse la Q14 y Q15 al mejorar el chunking,
+ya que al ser documentos largos y mi actual chunking no se lee todo el texto del documento
+- Alguna que hasta ahora funcionaba puede dejar de funcionar por pérdida de contexto, pero no creo que
+me pase en mas de 2 documentos.
+- Yo creo que Q1 Q2 y Q6 pueden llegar a mejorar con el nuevo chunking/embedding, por mas de que sean 
+documentos cortos. Q2 quizas se mezcla con el contexto del Q1 pero veremos que pasa.
+
+### Config 1: chunk 500 / overlap 100 (retrieval, sin API)
+Resultado: hit@1 6/15, hit@3 9/15 (base: 6/15 y 10/15). No supera la base.
+- Se recuperó Q15 (3). Q14 sigue sin aparecer.
+- Se perdieron Q4 y Q5 (estaban en posición 3). Sus docs son cortos y su chunk no cambió.
+- Q1, Q2 y Q6 sin cambio (su chunk es el mismo que antes).
+
+Predicción vs real: dije 10 y fue 9. Acerté en Q15 y en que perdería como mucho 2 (perdí justo 2).
+Erré en Q14 y en que Q1, Q2 y Q6 mejorarían.
+
+Hipótesis (sin probar): los trozos de los docs largos (27 tiene 4) puntúan más alto, ocupan
+varios lugares del top 3 y desplazan a los docs cortos.
+Conclusión: el truncamiento explica Q15 pero cortar a 500 no alcanza. No corro las respuestas con API
+porque no gana.
+
+### Diagnóstico config 1 (chunk 500)
+- Q4: el doc 27 ocupa 2 de los 3 lugares (27-p1, 27-p3). Los trozos de docs largos tapan al doc corto.
+- Q5: no hay duplicados (27-p3, 18-p1, 17-p1): el doc 05 pierde contra trozos más específicos de otros docs.
+  Mi hipótesis de lugares duplicados solo explica Q4.
+- Q14: el trozo correcto existe (26-p3 tiene "Monitorea cuenta 60+ días") y aun así no entra al top 3.
+  No es problema de chunking, es que el embedding no lo empareja con la pregunta.
+- Intrusos repetidos: docs 27, 15 y 23 aparecen en muchas preguntas que no tienen que ver.
+Conclusión: cambiar el tamaño del trozo solo explica Q15. Paso a probar top_k.
+
+
+## Experimento: Top 3 vs. Top 5
+Hipótesis:
+- Aumentar top_k de 3 a 5 debería mejorar Hit@5 respecto de Hit@3.
+- Baseline (1 chunk/PDF): predicción Hit@5 = 12/15.
+- C500 (chunks de 500): predicción Hit@5 = 11/15.
+- Preguntas que podrían recuperarse: Q1, Q2, Q4, Q5, Q6 y Q14.
+
+Objetivo:
+Evaluar si aumentar los resultados recuperados permite
+encontrar documentos relevantes que estaban en posiciones 4 y 5.
+
+### Config 2: top_k 3 → 5
+- Base original: hit@5 10/15 (igual que hit@3). Chunk 500: hit@5 9/15 (igual que hit@3).
+- Ninguna pregunta nueva entró al top 5. Ampliar la ventana no ayuda con este corpus.
+- El doc 01 aparece en 7 preguntas ajenas y no en la suya (Q1): el embedding empareja mal esa pregunta con ese texto.
+- Hipótesis (sin probar): el cuello de botella es el modelo de embeddings, no el chunking ni el top_k.
+
+
+### Experimento: ranking completo y chunking
+
+Base original (1 chunk/PDF):
+- Hit@1: 6/15
+- Hit@3: 10/15
+- Hit@5: 10/15
+
+Chunking de 500 caracteres:
+- Hit@1: 6/15
+- Hit@3: 9/15
+- Hit@5: 9/15
+
+Observaciones:
+- Q14: documento correcto en posición 6 en la base original.
+- Q1: posición 10.
+- Q6: posición 13.
+- Q2: posición 16.
+- Q15: posición 20; con chunks de 500 mejora a posición 3.
+- Los documentos largos podrían verse afectados por truncamiento.
+- Los documentos cortos presentan problemas de recuperación que no parecen explicarse por truncamiento.
+- Aumentar top_k no soluciona el problema de ranking.
+
+Conclusión:
+- La base original obtiene mejores resultados globales.
+- Se conserva la configuración baseline.
+- Las mejoras del modelo de embeddings quedan para una etapa posterior.
+
+### Experimento 3 — Prompt V3
+
+**Hipótesis:** eliminar respuestas irrelevantes sin perder aciertos.
+
+| Métrica | Predicción | V2 | V3 |
+|---|---|---|---|
+| acierta | 10 | 10 | 9 |
+| cita_mal | 0 | 2 | 0 |
+| no_se | 5 | 3 | 6 |
+| Hit@3 | 10/15 | 10/15 | 10/15 |
+
+**Hallazgos:**
+- Q1 y Q14: `cita_mal → no_se`, como se predijo.
+- Q5: `acierta → no_se`, pese a tener la respuesta disponible.
+- V3 elimina respuestas irrelevantes, pero pierde un acierto.
+
+### Cierre Bloque B
+- Chunk 500: Hit@3 = 9/15.
+- Top K=5: sin mejora respecto de Hit@3.
+- Prompt V3: mayor cautela, menos respuestas correctas.
+
+**Conclusión:** existe un trade-off entre responder y abstenerse. Con solo 15 preguntas y una ejecución, no hay evidencia suficiente para elegir un ganador.
+
+# Pendiente: probar otro modelo de embeddings (bge-m3 o e5) con el mismo eval

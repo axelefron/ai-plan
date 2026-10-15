@@ -1,0 +1,23 @@
+question_id,gold_doc,gold_fact,position,answer,acierta,cita_mal,no_se
+1,01_política_de_límites_de_crédito,"Categoría B; $2,000 a $5,000",,"El puntaje de 700 se encuentra en el rango de 650-749, con una aprobación de 75% o más [Fuente: 15_análisis_de_solicitud_de_crédito].
+
+La información restante no está disponible en los documentos consultados.",0,1,0
+2,02_tasas_de_interés_y_cargos,3%,,La información solicitada no está disponible en los documentos consultados.,0,0,1
+3,03_detección_de_fraude,"Patrones de gasto, geolocalización, velocidad de transacciones",1,"El sistema automático de IA monitorea patrones de gasto, geolocalización y velocidad de transacciones [Fuente: 03_detección_de_fraude].",1,0,0
+4,04_procedimientos_de_disputa,"Hasta $5,000",3,"Hasta $5,000 mientras se investiga [Fuente: 04_procedimientos_de_disputa].",1,0,0
+5,05_responsabilidad_cliente_vs_banco,2 días,3,"Según los documentos, el cliente es responsable de reportar el robo de la tarjeta en 2 días. [Fuente: 05_responsabilidad_cliente_vs_banco]",1,0,0
+6,06_cálculo_detallado_de_intereses,10.68%,,La información solicitada no está disponible en los documentos consultados.,0,0,1
+7,09_bonos_guía_completa,8-12%+,1,Los bonos de alto rendimiento ofrecen un rendimiento de 8-12%+ [Fuente: 09_bonos_guía_completa].,1,0,0
+8,11_aumentar_límite_estratégicamente,"$5,000-$15,000",1,"Los documentos presentan valores contradictorios para la Categoría B:
+
+- Categoría B: $5,000-$15,000 [Fuente: 11_aumentar_límite_estratégicamente]
+- Categoría B (Score 650-749): $2,000 a $5,000 [Fuente: 01_política_de_límites_de_crédito]
+
+Para clientes con 5 años o más, el límite puede llegar hasta 150% del evaluado [Fuente: 01_política_de_límites_de_crédito].",1,0,0
+9,12_impacto_atrasos_en_score,-150 a -200 puntos,1,"Si el atraso es de 90+ días, el score baja entre -150 y -200 puntos y el estado pasa a 'In Default' [Fuente: 12_impacto_atrasos_en_score].",1,0,0
+10,21_consolidación_de_deuda,$42 por mes,2,"Ahorrarías $42 al mes en intereses, al pasar de $90/mes con las tarjetas al 18% APR a $48/mes con un préstamo personal al 10% APR [Fuente: 21_consolidación_de_deuda].",1,0,0
+11,23_préstamos_personales,1-3 días,1,Aprobación: 1-3 días [Fuente: 23_préstamos_personales],1,0,0
+12,24_línea_de_crédito,5-10 años,2,El periodo de disposición (*draw period*) de una línea de crédito es de 5 a 10 años [Fuente: 24_línea_de_crédito].,1,0,0
+13,25_hipotecas:_introducción,2-5% del préstamo,1,Los costos de cierre totales de una hipoteca representan el 2-5% del préstamo [Fuente: 25_hipotecas:_introducción].,1,0,0
+14,26_banca_móvil_y_seguridad_digital,60+ días,,El cliente es responsable de reportar un robo en 2 días [Fuente: 05_responsabilidad_cliente_vs_banco]. La información restante no está disponible en los documentos consultados.,0,1,0
+15,27_protección_contra_fraude_de_identidad,10 minutos,,La información solicitada no está disponible en los documentos consultados.,0,0,1

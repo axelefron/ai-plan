@@ -4,3 +4,5 @@ __pycache__/
 .venv/
 rag_db/
 semana-05/proyecto2/*.txt
+
+rag_db_*/
