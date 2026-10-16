@@ -340,3 +340,20 @@ Conclusión:
 **Conclusión:** existe un trade-off entre responder y abstenerse. Con solo 15 preguntas y una ejecución, no hay evidencia suficiente para elegir un ganador.
 
 # Pendiente: probar otro modelo de embeddings (bge-m3 o e5) con el mismo eval
+
+# las docs que trae una tool pueden ser de otra versión que la de mi entorno; hay que fijar versión en el libraryId o verificar antes de pegar.
+
+**1. ¿Cómo registra cada una de las 2 tools? Compará con tu `@mcp.tool`.**  
+Con `server.registerTool()`, pasándole nombre, descripción, parámetros y función. Es lo mismo que hago con `@mcp.tool`, pero en TypeScript.
+
+**2. ¿Cómo lee la `--api-key`? ¿Por argumento, variable de entorno, o los dos?**  
+Por los dos: primero busca el argumento `--api-key`; si no está, usa la variable de entorno `CONTEXT7_API_KEY`.
+
+**3. ¿Qué hace `resolve-library-id` por dentro?**  
+Hace un request HTTP a la API de Context7 con el nombre de la librería y la consulta. Devuelve las librerías encontradas con sus IDs.
+
+**4. ¿Qué devuelve si la API falla?**  
+Devuelve el error como texto al modelo: el mensaje de la API o uno que arma el server si falla la conexión.
+
+**5. ¿Dónde aparece ese mensaje de “npx ctx7 setup”? ¿Es código del server o viene de la API?**  
+No está escrito en los archivos revisados. Si aparece en la respuesta de error de la tool, viene de la API y el server lo pasa al modelo.
