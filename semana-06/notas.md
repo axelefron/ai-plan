@@ -412,3 +412,60 @@ La descripción de la tool avisa que modifica la base.
 - Colección inexistente: "Base no encontrada. Corré rag_system.py primero."
 - Base vacía y se quiere agregar: se permite.
 - Ruta de la base: absoluta, derivada de la ubicación del archivo, porque Desktop lanza el servidor desde otro directorio.
+
+# Día 20 Bloque B: servidor MCP propio sobre Chroma
+
+## Qué construí
+`semana-07/mcp_chroma_server.py`: servidor MCP (FastMCP, stdio) sobre la colección `banking_docs`
+de `semana-06/rag_db`, con dos tools:
+- `search_docs(consultation, n_results=3)`: búsqueda por significado; devuelve cada fragmento con `[Fuente: título]`. No modifica nada.
+- `add_document(title, content)`: agrega un documento (1 chunk por documento, igual que el baseline).
+  MODIFICA la base. Valida vacíos, largo mínimo (50) y máximo (20.000), y rechaza duplicados.
+
+## Decisiones de diseño y por qué
+- **Embeddings:** el servidor reusa `get_embedding_function()` de `rag_system.py` (modelo
+  `paraphrase-multilingual-MiniLM-L12-v2`). Una sola fuente de verdad: si el modelo de la base y el de
+  la tool difieren, la búsqueda se rompe sin avisar.
+- **Chunking:** baseline (1 chunk por documento), porque el chunk de 500 perdió en mis evals (Hit@3 9/15 vs 10/15).
+  Limitación conocida: el modelo solo lee ~128 tokens (`max_seq_length = 128`), lo que pasa de ahí no entra al vector.
+- **IDs:** hash del contenido ya limpio. No pude reusar `chunk_{idx}_{part}` de `create_chunks`: con un solo
+  documento el índice sería 0 y chocaría con `chunk_0000_000`, que ya existe.
+- **Duplicados:** rechazo por título repetido (filtro por metadata `title`) y por contenido repetido (mismo hash = mismo ID).
+  No hay sobrescritura. 
+- **Errores:** las tools devuelven el error como texto al modelo; en un servidor MCP no existe `input()`.
+
+## Lo que aprendí de MCP y de Desktop
+- Desktop solo relee `claude_desktop_config.json` si se cierra del todo: `killall Claude`, verificar con
+  `pgrep -fl "Claude"` y reabrir. `Cmd+Q` no alcanza. Era la causa de "No servers added" desde el Día 19.
+- Rutas absolutas: el Python del venv, el servidor y la base. Desktop no hereda mi venv ni mi carpeta.
+- stdout es el canal del protocolo: un `print()` suelto rompe la conexión.
+- El nombre de los parámetros de una tool forma parte del esquema que lee el modelo (por eso `consultaiton` había que arreglarlo).
+- El subrayado de Pylance sobre `rag_system` es del editor: no sabe del `sys.path.insert`. Un `ModuleNotFoundError` al correr sí es real.
+- Un servidor MCP carga el código al arrancar: si edito el archivo, hay que reconectar para ver el cambio.
+- Desktop pidió permiso en cada uso, incluso para `search_docs` (solo lectura).
+
+## Resultados
+- Inspector: 6 casos de `add_document` y `search_docs` OK (vacío, corto, alta, título repetido, contenido repetido, búsqueda del documento nuevo).
+- Desktop: `banking-docs` en running; `search_docs` y `add_document` usadas desde un chat real.
+- Pregunta sin respuesta (tasa hipotecaria del banco): no inventó una tasa; dijo que los documentos no traen una publicada.
+- Verifiqué las citas contra los PDF (doc 19 y doc 25, dos páginas): todo lo que dijo el modelo estaba en el documento.
+- Hallazgo del documento (no del modelo): el doc 25 se contradice. Página 1: "DSCR >43%"; página 2: "relación deuda-ingreso <43%".
+  El RAG es tan confiable como sus documentos.
+
+## Pendiente / ideas
+- Anotaciones de las tools (solo lectura vs escribe) para que el cliente las distinga: ver `help(FastMCP.tool)`.
+- Key gratuita de Context7 (cuota anónima agotada el Día 19).
+- Experimento de embeddings alternativo (bge-m3 o e5) de la S6, todavía sin hacer.
+
+## Hallazgo de producto: quién controla qué cuando el modelo no encuentra respuesta
+Pregunté por la comisión de una transferencia internacional (no está en ningún documento) y el modelo
+buscó dos veces, no encontró nada y aclaró "no viene de tus documentos" antes de darme una orientación
+general con su conocimiento propio ($25-$50, tipo de cambio). Marcó la frontera, pero igual respondió
+fuera de los documentos.
+- Mi servidor solo devuelve fragmentos. Qué hace el modelo cuando no hay respuesta lo decide el cliente
+  y sus instrucciones, no la tool.
+- En el chatbot de la S6 lo controlaba con el system prompt ("respondé solo con el contexto"). Acá, en
+  Desktop, ese control no está en mi código.
+- Para un cliente que no acepte respuestas fuera de sus documentos, hay que fijarlo del lado del cliente
+  (instrucciones del proyecto o del agente), no en el servidor.
+- La pregunta sin respuesta funcionó como prueba: no inventó un dato del banco, y separó lo documentado de lo general.
