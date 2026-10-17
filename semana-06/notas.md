@@ -357,3 +357,58 @@ Devuelve el error como texto al modelo: el mensaje de la API o uno que arma el s
 
 **5. ¿Dónde aparece ese mensaje de “npx ctx7 setup”? ¿Es código del server o viene de la API?**  
 No está escrito en los archivos revisados. Si aparece en la respuesta de error de la tool, viene de la API y el server lo pasa al modelo.
+
+
+# Bloque A Día 20 : Diseño 
+
+**Servidor:** `semana-07/mcp_chroma_server.py`. Dos tools sobre la colección `banking_docs`
+de `rag_db` (baseline: 1 chunk por PDF, 27 chunks, modelo `paraphrase-multilingual-MiniLM-L12-v2`).
+
+## Tools
+
+| | `buscar_documentos` | `agregar_documento` |
+|---|---|---|
+| Descripción para el modelo | Busca por significado en los documentos del banco (APRs, categorías de crédito, procedimientos, responsabilidad en fraude). Usarla antes de responder cualquier pregunta sobre el banco. No modifica nada. | Agrega un documento nuevo a la base. MODIFICA la base. Usarla solo cuando el usuario pide agregar un documento. |
+| Parámetros | `consulta: str`, `n_resultados: int = 3` | `titulo: str`, `contenido: str` |
+| Devuelve | Texto con cada fragmento, su título y `[Fuente: titulo]` | Confirmación: título, ID del chunk y largo agregado |
+
+## 1. Pregunta de un cliente
+Alguien que trabaja en el banco consulta APRs, categorías de crédito, procedimientos y más.
+Ejemplo: "En esta situación, ¿la responsabilidad es del cliente o del banco?". La tool busca en
+los documentos del banco para que el modelo responda con información respaldada y fuentes citadas.
+
+## 2. Qué devuelve la búsqueda
+Igual que mi chatbot: por cada fragmento, el texto y el título (`meta["title"]`) para citar como
+[Fuente: nombre_documento]. Por defecto 3 resultados, igual que el chatbot. No devuelvo el
+porcentaje de relevancia como señal de confianza: en la S6 medí que los scores no separan casos
+correctos de incorrectos (un Top 1 incorrecto sacó 53,4% y uno correcto 52,8%).
+
+## 3. Escritura
+- **Embeddings:** modelo `paraphrase-multilingual-MiniLM-L12-v2`. No lo recuerdo de memoria ni
+  lo copio: abro la colección con `get_embedding_function()` de `rag_system.py`, la misma función
+  que usa la ingesta y el chatbot, así nunca difieren.
+- **Chunking:** el baseline. Un chunk por documento, con el prefijo "Tema: {título}\n\nContenido:\n".
+  El chunk de 500/100 perdió en mis evals (Hit@3 9/15 vs 10/15), así que no lo uso.
+  Limitación conocida: el modelo solo lee los primeros ~128 tokens (`max_seq_length = 128`);
+  en documentos largos, lo que pasa de ahí no entra al vector. Queda documentado y no se arregla hoy.
+- **IDs:** no puedo reusar `chunk_{idx}_{part}` porque `idx` sería 0 y chocaría con un chunk
+  existente. El ID sale de un hash del contenido limpio.
+- **Duplicados (política):** se rechaza si el título ya existe (se busca por metadata `title`)
+  o si el contenido ya existe bajo otro título (mismo hash = mismo ID). No hay sobrescritura.
+
+## 4. Validaciones antes de escribir
+Título y contenido no vacíos (sin contar espacios), largo máximo del contenido, contenido
+mínimo de 50 caracteres (mismo criterio que `create_chunks`), título que no exista, contenido
+que no exista. Después de agregar, devuelve el título, el ID y cuántos caracteres escribió.
+La descripción de la tool avisa que modifica la base.
+
+## 5. Errores (se devuelven como texto al modelo; no existe input() en el servidor)
+- Base vacía al buscar: "La base está vacía. Agregá documentos antes de buscar."
+- Consulta vacía: "La consulta no puede estar vacía."
+- Texto o título vacío al agregar: "El título y el contenido no pueden estar vacíos."
+- Contenido demasiado corto: "El contenido es demasiado corto para indexarlo (mínimo 50 caracteres)."
+- Título repetido: "El documento {titulo} ya existe en la base. No se agregó."
+- Contenido repetido: "Ese contenido ya existe en la base bajo el título {otro_titulo}. No se agregó."
+- Colección inexistente: "Base no encontrada. Corré rag_system.py primero."
+- Base vacía y se quiere agregar: se permite.
+- Ruta de la base: absoluta, derivada de la ubicación del archivo, porque Desktop lanza el servidor desde otro directorio.
