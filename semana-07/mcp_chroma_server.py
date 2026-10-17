@@ -13,7 +13,7 @@ DB_PATH = SEMANA_06 / "rag_db"
 COLLECTION_NAME =  "banking_docs"
 
 sys.path.insert(0, str(SEMANA_06))
-from rag_system import clean_text, get_embedding_function # noqa: E402
+from rag_system import clean_text, get_embedding_function  # noqa: E402  # type: ignore
 
 MIN_CHARS = 50
 MAX_CHARS = 20000
