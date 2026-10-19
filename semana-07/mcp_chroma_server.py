@@ -117,5 +117,37 @@ def add_document(title: str, content: str) -> str:
     )
     return f"Documento agregado: {title} (id {chunk_id}, {len(text)} caracteres)."
 
+
+@mcp.tool(
+    name="list_documents",
+    description=(
+        "Lista los títulos de todos los documentos del banco que están en la base, "
+        "sin repetir y en orden alfabético. Usala para saber qué documentos hay "
+        "disponibles antes de buscar o agregar uno. No modifica nada."
+    ),
+)
+def list_documents() -> str:
+    collection = open_collection()
+    if collection is None:
+        return "Base no encontrada. Corré rag_system.py primero."
+
+    # OJO: get() trae los metadatos de TODOS los chunks. Con pocos documentos está
+    # bien; con miles habría que pedirlos de a tandas con limit y offset.
+    metadatas = collection.get(include=["metadatas"])["metadatas"]
+    # un documento puede estar partido en varios chunks con el mismo título
+    titles = sorted({meta["title"] for meta in metadatas if meta and meta.get("title")})
+    sin_titulo = sum(1 for meta in metadatas if not (meta and meta.get("title")))
+
+    if not titles:
+        if sin_titulo:
+            return f"Hay {sin_titulo} fragmentos en la base pero ninguno tiene título."
+        return "La base está vacía. No hay documentos indexados."
+
+    resultado = f"{len(titles)} documentos en la base:\n" + "\n".join(f"- {t}" for t in titles)
+    if sin_titulo:
+        resultado += f"\n\nAviso: {sin_titulo} fragmentos no tienen título y no se listaron."
+    return resultado
+
+
 if __name__ == "__main__":
     mcp.run(transport="stdio")
