@@ -4,19 +4,19 @@
 
 ### 1. Contexto = lo que Claude "sabe" en este momento
 - Tiene una ventana de contexto limitada; todo lo que lee y escribe ocupa lugar.
-- `CLAUDE.md` en la raíz del repo ✱: instrucciones permanentes (comandos, convenciones, qué no tocar). `/init` ✱ genera uno.
-- Mencionar archivos puntuales (`@archivo`) ✱ en vez de dejar que explore todo.
-- `/clear` ✱ al cambiar de tarea y `/compact` ✱ para resumir cuando el contexto se llena.
+- `CLAUDE.md` en la raíz del repo: instrucciones permanentes (comandos, convenciones, qué no tocar). `/init` genera uno.
+- Mencionar archivos puntuales (`@archivo`) en vez de dejar que explore todo.
+- `/clear` al cambiar de tarea y `/compact` para resumir cuando el contexto se llena.
 
 ### 2. Flujo de trabajo
 - Pedir en pasos chicos y verificables; revisar el diff antes de aceptar.
-- Plan mode ✱: primero que proponga el plan, yo lo corrijo y después ejecuta.
-- Pensar más (extended thinking ✱) solo para problemas difíciles; cuesta más tokens.
+- Plan mode: primero que proponga el plan, yo lo corrijo y después ejecuta.
+- Pensar más (extended thinking) solo para problemas difíciles; cuesta más tokens.
 - Darle una forma de verificar su trabajo (tests, correr el script): sin eso, no sabe si funcionó.
 
 ### 3. Extender Claude Code
 - **MCP:** se le conectan servidores propios o ajenos (igual que Desktop). Mi `mcp_chroma_server.py` sirve acá también.
-- Comandos personalizados ✱ y hooks ✱ (acciones automáticas antes/después de usar una tool).
+- Comandos personalizados y hooks (acciones automáticas antes/después de usar una tool).
 
 ### 4. GitHub
 - Integración para PRs y code review; Claude puede revisar cambios y comentar.
@@ -64,9 +64,6 @@ MCP es una forma estándar de conectar una IA con herramientas y fuentes de info
 En mi proyecto, conecto la IA con una base de documentos del banco. Si alguien pregunta sobre un procedimiento, la IA puede usar la herramienta de búsqueda para encontrar fragmentos relevantes y responder citando las fuentes. Si le pido agregar un documento, puede usar otra herramienta, con mi aprobación.
 
 El servidor MCP no es el que piensa ni redacta la respuesta: ejecuta la herramienta y devuelve el resultado. La IA usa ese resultado para seguir la conversación. MCP define cómo se comunican.
-
-**Pendiente**
-- Lecciones 3 y 4 del curso de subagentes.
 
 
 ## Lección 3 — Diseñar subagentes que funcionen
