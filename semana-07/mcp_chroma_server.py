@@ -18,6 +18,7 @@ from rag_system import clean_text, get_embedding_function  # noqa: E402  # type:
 MIN_CHARS = 50
 MAX_CHARS = 20000
 MAX_RESULTS = 10
+NO_DB_MSG = "Base no encontrada en semana-06/rag_db. Restaurá el backup; rag_system.py hoy genera rag_db_c500, no esta carpeta."
 
 mcp =FastMCP("DocumentMCP", log_level="ERROR")
 
@@ -54,7 +55,7 @@ def search_docs(consultation: str, n_results: int = 3) -> str:
 
     collection = open_collection()
     if collection is None:
-        return "Base no encontrada. Corré rag_system.py primero."
+        return NO_DB_MSG
 
     total = collection.count()
     if total == 0:
@@ -65,7 +66,7 @@ def search_docs(consultation: str, n_results: int = 3) -> str:
 
     blocks = []
     for text, meta in zip(results["documents"][0], results["metadatas"][0]):
-        blocks.append(f"[Fuente: {meta['title']}]\n{text}")
+        blocks.append(f"[Fuente: {(meta or {}).get('title', '(sin título)')}]\n{text}")
     return "\n\n".join(blocks)
 
 
@@ -91,7 +92,7 @@ def add_document(title: str, content: str) -> str:
 
     collection = open_collection()
     if collection is None:
-        return "Base no encontrada. Corré rag_system.py primero."
+        return NO_DB_MSG
 
     if collection.get(where={"title": title}, limit=1)["ids"]:
         return f"El documento {title} ya existe en la base. No se agregó."
@@ -129,7 +130,7 @@ def add_document(title: str, content: str) -> str:
 def list_documents() -> str:
     collection = open_collection()
     if collection is None:
-        return "Base no encontrada. Corré rag_system.py primero."
+        return NO_DB_MSG
 
     # OJO: get() trae los metadatos de TODOS los chunks. Con pocos documentos está
     # bien; con miles habría que pedirlos de a tandas con limit y offset.

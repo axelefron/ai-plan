@@ -18,6 +18,7 @@
 ### `search_docs`
 - Recorta espacios de la consulta; si queda vacía no busca.
 - La cantidad de resultados se ajusta a `max(1, min(n_results, 10, total_en_la_base))`: como mínimo 1, como máximo 10 (`MAX_RESULTS`) y nunca más que los fragmentos que hay.
+- Si un fragmento devuelto no tiene `title`, la fuente se muestra como `(sin título)` en vez de fallar.
 
 ### `add_document`
 Antes de escribir valida, en este orden:
@@ -33,7 +34,6 @@ Si pasa todo, guarda el texto con el formato `Tema: <título con "_" reemplazado
 - Agrupa por `title`: un documento partido en varios fragmentos aparece una sola vez.
 - Los fragmentos sin título no se listan; se informa cuántos son.
 - Trae los metadatos de todos los fragmentos de una vez (el comentario del código aclara que con miles de documentos habría que paginar).
-- A diferencia de `list_documents`, `search_docs` lee `meta['title']` directamente: si un fragmento devuelto no tiene `title`, la tool falla con `KeyError` en vez de devolver un mensaje.
 
 ## Qué devuelve cada tool cuando falta la base o está vacía
 
@@ -41,9 +41,9 @@ Si pasa todo, guarda el texto con el formato `Tema: <título con "_" reemplazado
 
 | Tool | Sin base | Base vacía |
 |---|---|---|
-| `search_docs` | `Base no encontrada. Corré rag_system.py primero.` | `La base está vacía. Agregá documentos antes de buscar.` |
-| `add_document` | `Base no encontrada. Corré rag_system.py primero.` | No hay caso especial: agrega el documento normalmente (las validaciones de arriba siguen aplicando). |
-| `list_documents` | `Base no encontrada. Corré rag_system.py primero.` | `La base está vacía. No hay documentos indexados.` |
+| `search_docs` | `Base no encontrada en semana-06/rag_db. Restaurá el backup; rag_system.py hoy genera rag_db_c500, no esta carpeta.` | `La base está vacía. Agregá documentos antes de buscar.` |
+| `add_document` | `Base no encontrada en semana-06/rag_db. Restaurá el backup; rag_system.py hoy genera rag_db_c500, no esta carpeta.` | No hay caso especial: agrega el documento normalmente (las validaciones de arriba siguen aplicando). |
+| `list_documents` | `Base no encontrada en semana-06/rag_db. Restaurá el backup; rag_system.py hoy genera rag_db_c500, no esta carpeta.` | `La base está vacía. No hay documentos indexados.` |
 
 Notas:
 - En `search_docs` y `add_document`, las validaciones de entrada (consulta vacía, título/contenido vacío, largo) se chequean **antes** de abrir la base, así que con una entrada inválida devuelven ese error aunque la base no exista.
@@ -61,7 +61,7 @@ El servidor habla por `stdio`: al correrlo a mano queda esperando mensajes MCP p
 
 La base tiene que existir antes en `semana-06/rag_db` con la colección `banking_docs`.
 
-> Ojo: el mensaje de error dice "Corré rag_system.py primero", pero hoy el bloque `__main__` de `semana-06/rag_system.py` crea la base en `./rag_db_c500`, no en `./rag_db`. Correrlo tal como está no genera la carpeta que lee este servidor.
+> Ojo: hoy el bloque `__main__` de `semana-06/rag_system.py` crea la base en `./rag_db_c500`, no en `./rag_db`. Correrlo tal como está no genera la carpeta que lee este servidor; por eso el mensaje de error pide restaurar el backup.
 >
 > Además, `create_rag_database()` borra la colección `banking_docs` antes de recrearla. Si se regenera la base que lee este servidor, se pierden los documentos agregados con `add_document`.
 
@@ -83,5 +83,6 @@ En el archivo de configuración de Claude Desktop (`claude_desktop_config.json`)
 - `command`: el Python del `.venv`, para que encuentre `mcp`, `chromadb` y el modelo de embeddings.
 - `args`: la ruta al script. No hace falta `cwd`: el script calcula la ruta de la base y de `rag_system.py` a partir de su propia ubicación.
 - El nombre de la clave (`banking-docs` en el ejemplo) se puede elegir; no lo usa el código del servidor.
+- Después de editar la config hay que cerrar Claude Desktop del todo (`killall Claude`); `Cmd+Q` no alcanzó en mi Mac (verificado el Día 20).
 
 Como `add_document` es la única tool que modifica la base, es la que conviene aprobar a mano cada vez que el cliente la quiera usar.

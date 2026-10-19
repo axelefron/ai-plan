@@ -78,3 +78,23 @@ Cómo lo probé:
 - Pedí un archivo con una key falsa escrita "a propósito". El prompt de entrada que escribió el principal no decía ni la key ni "a propósito". El revisor la detectó solo como riesgo alto y dio "Rechazaría".
 - Me quedó claro que la description es una palanca más fuerte de lo que pensaba: controla qué le cuenta el principal al subagente.
 - Todavía son pocas pruebas, no lo doy por cerrado.
+
+
+## Hallazgo 2 · Contradicción en el doc 18 (seguros bancarios)
+- Probé desde Desktop: "¿quién paga si me hacen un fraude con la tarjeta?". Usó `search_docs` y citó los docs 05 y 18.
+- El doc 18 se contradice solo: "Tarjeta de crédito: fraude, máximo $50" vs. "Reportar después de 60 días: 100% responsable" (escala sin decir a qué producto aplica).
+- El doc 05 no tiene escala de montos; solo "reportar robo en 2 días" y la lista de leyes.
+- El modelo avisó que la escala no coincidía con lo que sabe de la ley y diferenció lo que venía de los docs de lo que no. Pero el RAG no resuelve contradicciones de la fuente.
+- Arreglo pendiente (no hoy): reescribir el doc 18 indicando crédito vs. débito y reindexar. No corregí los PDF.
+
+
+## Respuestas a las preguntas del revisor del README (Día 21)
+
+1. **`add_document` con título nuevo, 30 caracteres y sin carpeta `rag_db`: ¿qué mensaje recibo?**
+   El de contenido demasiado corto (mínimo 50 caracteres), no "Base no encontrada". `add_document` primero valida la entrada (vacío, mínimo y máximo de caracteres) y recién después abre la base. Con 30 caracteres corta en esa validación y nunca llega a chequear si la base existe.
+
+2. **¿Por qué rechaza un documento con título distinto y qué parte del código lo detecta?**
+   Porque lo que identifica al documento es el contenido, no el título. El id sale de un hash (SHA-256) del contenido y el código pregunta si ese id ya existe con `collection.get(ids=[chunk_id])`. Si existe, avisa que ese contenido ya está bajo otro título y no agrega nada.
+
+3. **Si corro `python rag_system.py` desde `semana-06` tal como está, ¿qué carpeta se regenera?**
+   Se regenera `rag_db_c500`, no `rag_db`, así que no afecta lo que lee el servidor. Además `create_rag_database()` borra la colección antes de recrearla (no la duplica). Si apuntara a `rag_db`, perdería los documentos que agregué con `add_document`. Por eso hago backup antes de las pruebas.
