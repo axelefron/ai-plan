@@ -1,0 +1,11 @@
+id,product,category,price,stock
+1,Laptop Dell XPS 13,electronics,1200,5
+2,Monitor LG 27 pulgadas,electronics,350,8
+3,Mouse Logitech MX,peripherals,100,15
+4,Teclado Mecánico,peripherals,180,12
+5,Silla Gamer Herman Miller,furniture,1500,3
+6,Escritorio Standing,furniture,600,2
+7,Webcam Logitech 4K,peripherals,120,10
+8,iPhone 15 Pro,electronics,1100,4
+9,AirPods Pro,electronics,280,20
+10,Cable USB-C,peripherals,25,50
