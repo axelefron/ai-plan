@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 from anthropic import Anthropic
 from datetime import datetime
 from pathlib import Path
+from langfuse import observe, get_client
+from rag_tool import search_docs
+from policy import authorize, REPORTS_DIR
 import csv
 import json
 import os
@@ -11,6 +14,7 @@ import subprocess
 import random
 
 load_dotenv()
+langfuse = get_client()
 
 STATE_DIR = Path(__file__).parent / "state"
 STATE_DIR.mkdir(exist_ok=True)
@@ -81,6 +85,17 @@ tools = [
                 }
             },
             "required": ["content", "filename"]
+        }
+    },
+    {
+        "name": "search_docs",
+        "description": "Search the bank's policy documents (credit limits, rates, fraud, disputes, etc.) and return the top matching fragments with their source.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "What to look for, in natural language"}
+            },
+            "required": ["query"]
         }
     }
 ]
@@ -154,16 +169,19 @@ def calculate_discount(prices, discount_percent):
 
 def save_report(content, filename):
     filename = os.path.basename(filename)
+    REPORTS_DIR.mkdir(exist_ok=True)
+    path = REPORTS_DIR / filename
 
     if "electronics" in filename:
         time.sleep(3)
 
-    with open(filename, "w") as file:
+    with open(path, "w") as file:
         file.write(content)
 
-    subprocess.run(["code", "--reuse-window", filename], check=True)
-    return f"✓ Report saved to {filename}"
+    subprocess.run(["code", "--reuse-window", str(path)], check=True)
+    return f"✓ Report saved to {path}"
 
+@observe(name="tool-attempt", as_type="tool")
 def execute_tool(tool_name, tool_input):
     if tool_name == "search_in_csv":
         criteria = tool_input.get("criteria")
@@ -180,9 +198,13 @@ def execute_tool(tool_name, tool_input):
         filename = tool_input.get("filename")
         return save_report(content, filename)
 
+    elif tool_name == "search_docs":
+        return search_docs(tool_input.get("query"))
+
     else:
         return f"Error: Unknown tool '{tool_name}'"
 
+@observe(name="tool-with-retries")
 def execute_with_retries(tool_name, tool_input):
     for attempt in range(MAX_RETRIES + 1):
         try:
@@ -194,6 +216,7 @@ def execute_with_retries(tool_name, tool_input):
             print(f"⚠️  {tool_name} failed ({e}). Retry {attempt + 1}/{MAX_RETRIES} in {delay:.1f}s")
             time.sleep(delay)
 
+@observe(name="human-approval")
 def ask_approval(tool_use):
     print(f"\n⚠️  Irreversible action requested: {tool_use.name}")
     for key, value in tool_use.input.items():
@@ -230,22 +253,39 @@ def new_state(user_message):
 def to_plain(content):
     return [b.model_dump(exclude_none=True) for b in content]
 
+@observe(name="claude-call", as_type="generation")
+def call_claude(messages, system_prompt):
+    response = client.messages.create(
+        model=model,
+        max_tokens=1024,
+        tools=tools,
+        messages=messages,
+        system=system_prompt
+    )
+    langfuse.update_current_generation(
+        model=model,
+        input=messages,
+        output=to_plain(response.content),
+        usage_details={
+            "input": response.usage.input_tokens,
+            "output": response.usage.output_tokens,
+        },
+    )
+    return response
+
+SYSTEM_PROMPT = ("You are a helpful assistant that searches products, calculates discounts, answers questions about bank policy documents, and saves reports. "
+    "Use save_report only when the user explicitly asks for a report to be saved; the user will be asked to approve it before it is written. "
+    "If a tool fails or the user rejects an action, say so plainly. Never invent data to continue.")
+
+@observe(name="agent-run")
 def run_agent(state):
-    system_prompt = ("You are a helpful assistant that searches products, calculates discounts, and saves reports. "
-        "Save the final report with save_report; the user will be asked to approve it before it is written. "
-        "If a tool fails or the user rejects an action, say so plainly. Never invent data to continue.")
+    system_prompt = SYSTEM_PROMPT
     messages = state["messages"]
     turns = state["turn"]
 
     while turns < MAX_TURNS:
         turns += 1
-        response = client.messages.create(
-            model=model,
-            max_tokens=1024,
-            tools=tools,
-            messages=messages,
-            system=system_prompt
-        )
+        response = call_claude(messages, system_prompt)
 
         input_tokens = response.usage.input_tokens
         output_tokens = response.usage.output_tokens
@@ -286,22 +326,27 @@ def run_agent(state):
             break
 
         tool_results = []
-        failures = state.setdefault("tool_failures", {})   # NUEVO: fallos por tool, guardados en el estado
+        failures = state.setdefault("tool_failures", {})
 
         for tool_use in tool_uses:
             print(f"\nExecuting: {tool_use.name} with {tool_use.input}")
 
             approved = None
-            blocked = failures.get(tool_use.name, 0) >= MAX_TOOL_FAILURES   
+            blocked = failures.get(tool_use.name, 0) >= MAX_TOOL_FAILURES
+            allowed, reason = authorize(tool_use.name, tool_use.input, state)   # NUEVO: política en código
 
-            if not blocked and tool_use.name in REQUIRES_APPROVAL:          
+            if not blocked and allowed and tool_use.name in REQUIRES_APPROVAL:  # CAMBIO: no molesta al humano con lo prohibido
                 approved = ask_approval(tool_use)
 
-            if blocked:                                                    
+            if blocked:
                 result = (f"Tool '{tool_use.name}' is disabled for this run after "
                           f"{MAX_TOOL_FAILURES} failures. Do not call it again; tell the user.")
                 is_error = True
-            elif approved is False:                                         
+            elif not allowed:                                                   
+                result = (f"Action denied by security policy: {reason}. "
+                          "Do not retry with the same arguments; tell the user.")
+                is_error = True
+            elif approved is False:
                 result = "Action rejected by the user. Do not retry it; tell the user it was not executed."
                 is_error = True
             else:
@@ -312,7 +357,7 @@ def run_agent(state):
                 except Exception as e:
                     result = f"Tool failed: {str(e)}"
                     is_error = True
-                    failures[tool_use.name] = failures.get(tool_use.name, 0) + 1   
+                    failures[tool_use.name] = failures.get(tool_use.name, 0) + 1
 
             print(f"Result: {result}\n")
 
@@ -323,6 +368,7 @@ def run_agent(state):
                 "tool_result": result,
                 "is_error": is_error,
                 "approved": approved,
+                "policy": reason,                                               # NUEVO: queda en el log
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
                 "total_tokens": total_tokens
@@ -378,6 +424,8 @@ if __name__ == "__main__":
                 "event": "agent_error",
                 "error": str(e)
             })
+    
+    langfuse.flush()
 
     print("\n\n=== SESSION LOG ===")
     for entry in log:

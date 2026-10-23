@@ -83,3 +83,29 @@
 
 ### Pendiente para el Día 24
 - Evaluar en varias corridas si "Never invent data to continue" evita que Claude invente datos cuando falla una tool (hoy lo vi funcionar en una sola corrida).
+
+
+## Día 24 — Bloque A: observabilidad con Langfuse
+
+- **Qué es:** Langfuse guarda un *trace* por corrida: un árbol con cada llamada a Claude, cada tool, tokens, costo y latencia. Mi `log` casero se pierde al cerrar la terminal y no mide tiempos ni dólares.
+- **Cómo lo instrumenté:** `@observe` sobre `run_agent` (raíz), `call_claude` (generation, con modelo y tokens), `execute_with_retries`, `execute_tool` (tool) y `ask_approval`. `langfuse.flush()` al salir, porque los datos se mandan en segundo plano. Keys solo en `.env`.
+- **Qué vi:**
+  - Los tokens coinciden con mi terminal (5548 vs "6k", redondeo). Costo ≈ US$0.024 por corrida.
+  - La llamada más cara no fue la de más tokens de entrada: la salida cuesta 5× más por token, y la más cara fue la que escribió el reporte.
+  - La entrada crece en cada vuelta porque reenvío el historial completo (más system prompt y schemas de las tools). No hay "tokens de pensamiento": no usé extended thinking.
+  - Reintentos: 3 intentos, 22 ms de trabajo real y ~3 s de espera de backoff. Cuestan tiempo, no tokens.
+  - La aprobación humana (`human-approval`) duró 1.8 s. Sin decorarla, era un hueco invisible de ~9 s. Tiempo de humano ≠ tiempo del agente.
+- **Errores:** un error dentro de una tool aparece en el árbol (Tree → clic en `tool-attempt` → Preview), no en Log View. `agent-run` sale sin error porque el agente manejó la falla como estaba diseñado: el error de una tool no es el fallo del agente.
+- **Detalle:** el `undefined` en el Output de `agent-run` es porque `run_agent` no devuelve nada, no por una excepción.
+
+# Bloque B: seguridad y prompt injection
+
+- **Por qué funciona la inyección:** el modelo recibe system prompt, pregunta y documentos recuperados como una sola secuencia de texto, sin frontera técnica entre instrucciones y datos. No "borra" mi prompt: compite con él.
+- **Indirecta:** el atacante no habla con el agente, envenena un documento. Tiene que llegar al top de la búsqueda (LLM08) o nunca llega al modelo; mis dos primeros documentos no entraron al top 3 hasta que les agregué texto del tema.
+- **Resultado:** 0/12 acciones del atacante con Sonnet 4.5 y mi prompt, aunque la inyección llegó al modelo 12/12 (el modelo la ignoró sin avisarle al usuario). Ni mi predicción (los 2 primeros funcionan) ni mi prompt original estaban medidos: con N=1 no se concluye nada.
+- **Instrumento:** hizo falta un control positivo y una columna "llegó al modelo" para que un 0 signifique algo. Un instrumento que falla en silencio (se me acabó el saldo) imprime ceros que parecen buenas noticias.
+- **El caso peligroso:** cuando el usuario sí pide guardar, el atacante solo secuestra un parámetro (nombre o extensión). La aprobación manual se vuelve un trámite.
+- **Defensa:** la autorización va en el código de la tool (`policy.py`), no filtrando texto ni confiando en el modelo: nombre simple y `.txt`, dentro de `reports/`, tamaño y procedencia del valor. Filtrar frases como "ignorá todo lo anterior" no escala: el atacante reescribe.
+- **Cómo la probé:** tests que simulan un modelo comprometido (sin API) y un test de integración de que lo prohibido no llega ni a la aprobación ni a la ejecución.
+- **Hallazgo previo:** `save_report` podía pisar `persistent_agent.py` o `data.csv` (solo había `basename`).
+- **Pendiente:** caso 05 y prompts B/C con saldo; evaluar en varias corridas si "Never invent data" evita que invente datos (pendiente desde el Día 23).
