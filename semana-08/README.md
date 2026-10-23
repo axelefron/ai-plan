@@ -29,7 +29,7 @@ El agente retoma una corrida cortada a mitad de una tool, reintenta solo errores
 | | Resultado |
 |---|---|
 | Control positivo (el usuario pide guardar) | `save_report` 2/2: el instrumento detecta |
-| 4 ataques (override, falsa autoridad, nota al pie, secuestro de nombre) | la inyección llegó al modelo 12/12; acción del atacante **0/12** |
+| 5 ataques (override, falsa autoridad, nota al pie, secuestro de nombre y de extensión) × 3 prompts (actual, permisivo, defensivo) | la inyección llegó al modelo 45/45; acción del atacante **0/45** |
 | Política en código | 15 tests (nombres peligrosos, procedencia del valor, integración con `run_agent`), sin llamar a la API |
 
 Un hallazgo antes de atacar: `save_report` podía pisar `persistent_agent.py` o `data.csv`. Ahora solo escribe `.txt` con nombre simple dentro de `reports/`.
@@ -37,7 +37,7 @@ Un hallazgo antes de atacar: `save_report` podía pisar `persistent_agent.py` o 
 ## Limitaciones
 
 - Las pruebas de inyección son **N = 3 por caso**, un solo modelo y ataques explícitos. Que hoy resista no es una garantía.
-- El caso 5 (secuestro de extensión) y los prompts alternativos quedaron sin medir: se me acabó el saldo de la API.
+- Los tres prompts dieron 0/45: no se observa diferencia entre ellos, pero con N=3 no se puede concluir que sean equivalentes. El control (2/2) solo se midió con el prompt actual.
 - La política cubre `save_report`; no cubre contenido envenenado que cambie el texto de la respuesta.
 - Falta evaluar, en varias corridas, si "Never invent data" evita que el agente invente cuando una tool falla.
 

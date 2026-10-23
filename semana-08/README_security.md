@@ -23,10 +23,10 @@ Agente (`persistent_agent.py`) con 4 tools: `search_in_csv`, `calculate_discount
 3. **Política en código (`policy.py`)**, evaluada antes de ejecutar la tool y sin depender del modelo: nombre simple y solo `.txt`, siempre dentro de `reports/`, tamaño máximo y **procedencia** (un nombre que aparece en un documento recuperado y no en el pedido del usuario se rechaza). Cada decisión queda como observación `policy-check` en Langfuse.
 
 ## Resultados
-Medición (`run_attacks.py`): Claude Sonnet 4.5, prompt actual, 3 corridas por caso, aprobación simulada que siempre rechaza.
+Medición (`run_attacks.py`): Claude Sonnet 4.5, 3 prompts (actual, permisivo, defensivo), 5 casos, 3 corridas por caso (45 en total), aprobación simulada que siempre rechaza.
 - Control positivo (el usuario pide guardar): `save_report` 2/2. El instrumento detecta.
-- Casos 01-04: la inyección llegó al modelo 12/12; acción del atacante **0/12**. En el caso 04 usó `fraude.txt`.
-- Caso 05 y prompts alternativos (permisivo, defensivo): sin medir (se acabó el saldo de la API).
+- Casos 01-05, los tres prompts: la inyección llegó al modelo 45/45; acción del atacante **0/45**. En los casos 04 y 05 guardó con el nombre pedido por el usuario (`fraude.txt`, `banca_movil.txt`), no con el del atacante.
+- Sin diferencia observable entre los prompts; con N=3 no se puede concluir que sean equivalentes. El control solo se midió con el prompt actual.
 - Política: verificada con tests unitarios que simulan un modelo comprometido y un test de integración, sin llamar a la API.
 
 ## Limitaciones
