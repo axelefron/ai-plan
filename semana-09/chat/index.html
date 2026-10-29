@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!-- DOCTYPE: le avisa al navegador que esto es HTML moderno. Sin esta línea, algunos navegadores se ponen en "modo antiguo".  --> 
+
+<html lang="en-US">
+<!-- lang="en": idioma de la página (inglés de USA). Lo usan los lectores de pantalla y los traductores del navegador. -->
+
+<head>
+    <!-- HEAD: información SOBRE la página. Nada de esto se ve en pantalla. -->
+     <meta charset="UTF-8">
+     <!-- charset: cómo se leen los caracteres (tildes, ñ, símbolos). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- viewport: en el teléfono, usar el ancho real de la pantalla. Sin esto, el celular muestra la página "achicada". -->
+    <title>Bank Docs Assistant</title>
+    <!-- title: el texto de la pestaña del navegador. --> 
+</head>
+
+<body>
+    <!-- BODY: todo lo que se ve en la página. -->
+
+    <header>
+        <!-- header: la parte de arriba de la página (o de una sección). Se usa en vez de un <div> porque dice QUÉ es. -->
+        <h1>Bank Docs Assistant</h1> <!-- h1: el título principal. Debe haber uno solo por página. -->
+        <p>Ask questions about the bank's policy documents.</p>
+    </header>
+
+    <main> <!-- main: el contenido principal. Solo uno por página. Todo lo que NO es encabezado ni pie va acá. -->
+
+        <section aria-labelledby="chat-title">
+            <!-- section: una parte con tema propio. aria-labelledby apunta al id del título de esta sección, así un
+           lector de pantalla la anuncia como "Conversation". -->
+
+           <h2 id="chat-title">Conversation</h2>
+
+           <ol id="messages" role="log" aria-live="polite">
+            <!-- ol: lista ORDENADA. Un chat es una secuencia en el tiempo, así que el orden importa (por eso ol y no ul).
+             id="messages": un nombre único, para que JavaScript (Día 27) pueda encontrar esta lista y agregarle mensajes.
+             role="log" + aria-live="polite": avisa a los lectores de pantalla que acá aparecen mensajes nuevos. -->
+
+             <li>
+                <strong>You:</strong> <!-- strong: texto importante. Acá marca quién habla. -->
+                <p>What is a credit limit?</p>
+             </li>
+             <li>
+                <strong>Assistant:</strong>
+                <p>(Sample answer. The real answer will come from the RAG backend.)</p>
+                <!-- Estos dos <li> son de ejemplo, escritos a mano. Más adelante los va a crear JavaScript y los vas a borrar de acá. -->
+             </li>
+           </ol>
+        </section>
+
+        <aside aria-labelledby="sources-title">
+            <!-- aside: contenido relacionado pero secundario (una barra lateral). Las fuentes acompañan la respuesta, no son la respuesta. -->
+            <h2 id="sources-title">Sources</h2>
+            <ul id="sources">
+                <li>(Cited documents will appear here.)</li>
+            </ul>
+        </aside>
+
+        <form id="chat-form"> <!-- form: agrupa el campo y el botón. Así Enter envía el mensaje igual que el click, sin código extra. -->
+            <label for="question">Your question</label> <!-- label: el texto descriptivo del campo.
+            for="question" lo conecta con el campo que tenga id="question". -->
+
+            <br>
+            <textarea id="question" name="quesiton" rows="3" columns="50" placeholder="Type your question here..." required></textarea>
+            <!-- textarea: campo de texto de varias líneas. id: lo conecta con el label (y lo usa JavaScript).
+            name: el nombre del dato cuando se envía el formulario. rows/cols: tamaño provisional (el CSS lo reemplaza el Día 26).
+            placeholder: texto gris de guía que desaparece al escribir. required: no deja enviar si está vacío. -->
+            <br>
+
+            <button type="submit">Send</button>
+            <!-- button type="submit": al hacer click, envía el formulario. (type="button" haría click sin enviar nada.) -->
+        </form>
+
+        <p><small>This assistant only answers from the bank's policy documents. It may say "I don't know" when the documents don't cover a question.</small></p>
+        <!-- small: texto chico, para avisos y aclaraciones. Este es el aviso de límites del chatbot. -->
+         
+    </main>
+
+    <footer> <!-- footer: el pie de la página. -->
+        <p>
+            Built as part of a 13-week AI agents plan.
+            <a href="https://github.com/axelefron/ai-plan">Source on GitHub</a>
+            <!-- a href: un link. El texto entre las etiquetas es lo que se ve. -->
+        </p>
+    </footer>
+
+</body>
+</html>
